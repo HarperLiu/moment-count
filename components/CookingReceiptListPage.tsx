@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,10 @@ import {
   FlatList,
 } from "react-native";
 import { ArrowLeft, Plus, Clock } from "lucide-react-native";
+import { api } from "../app/api";
 
 type Recipe = {
-  id: number;
+  id: string;
   name: string;
   description: string;
   timeCost: string;
@@ -46,74 +47,35 @@ export function CookingReceiptListPage({
   onBack: () => void;
   onAddRecipe: () => void;
 }) {
-  const recipes = useMemo<Recipe[]>(
-    () => [
-      {
-        id: 1,
-        name: "Thai Seafood Glass Noodle",
-        description:
-          "A refreshing Thai salad made with tender glass noodles, fresh shrimp, squid, and aromatic herbs tossed in a zesty lime dressing.",
-        timeCost: "45 min",
-        image:
-          "https://images.unsplash.com/photo-1745209981037-a92f69e241d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0aGFpJTIwZ2xhc3MlMjBub29kbGVzJTIwc2VhZm9vZHxlbnwxfHx8fDE3NjE4ODE1NzZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-      {
-        id: 2,
-        name: "Japanese Ramen Bowl",
-        description:
-          "A rich and savory bowl of ramen noodles served in a fragrant broth, topped with tender pork, soft-boiled egg, and fresh scallions.",
-        timeCost: "1 h 30 min",
-        image:
-          "https://images.unsplash.com/photo-1697652974652-a2336106043b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYXBhbmVzZSUyMHJhbWVuJTIwYm93bHxlbnwxfHx8fDE3NjE4ODE1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-      {
-        id: 3,
-        name: "Italian Carbonara Pasta",
-        description:
-          "Classic Roman pasta dish with creamy egg sauce, crispy pancetta, and freshly grated Pecorino Romano cheese.",
-        timeCost: "25 min",
-        image:
-          "https://images.unsplash.com/photo-1739417083034-4e9118f487be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpdGFsaWFuJTIwcGFzdGElMjBkaXNofGVufDF8fHx8MTc2MTg5MTMxNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-      {
-        id: 4,
-        name: "Premium Sushi Platter",
-        description:
-          "An elegant assortment of fresh nigiri and maki rolls featuring premium tuna, salmon, and seasonal fish with wasabi and pickled ginger.",
-        timeCost: "2 h",
-        image:
-          "https://images.unsplash.com/photo-1625937751876-4515cd8e78bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdXNoaSUyMHBsYXR0ZXJ8ZW58MXx8fHwxNzYxODM0NDI3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-      {
-        id: 5,
-        name: "Mexican Street Tacos",
-        description:
-          "Authentic street-style tacos with seasoned meat, fresh cilantro, onions, and a squeeze of lime on soft corn tortillas.",
-        timeCost: "30 min",
-        image:
-          "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZXhpY2FuJTIwdGFjb3N8ZW58MXx8fHwxNzYxODAwNjM4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-      {
-        id: 6,
-        name: "Butter Chicken Curry",
-        description:
-          "Tender chicken pieces simmered in a rich, creamy tomato-based sauce with aromatic Indian spices, served with basmati rice.",
-        timeCost: "1 h",
-        image:
-          "https://images.unsplash.com/photo-1710091691802-7dedb8af9a77?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBjdXJyeXxlbnwxfHx8fDE3NjE4OTMwODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-      {
-        id: 7,
-        name: "French Crème Brûlée",
-        description:
-          "Classic French dessert featuring silky vanilla custard with a perfectly caramelized sugar crust that cracks with every spoonful.",
-        timeCost: "3 h",
-        image:
-          "https://images.unsplash.com/photo-1589091637765-cbd0eff73a44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBkZXNzZXJ0fGVufDF8fHx8MTc2MTg5MzA4OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-    ],
-    []
-  );
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    api
+      .getRecipes()
+      .then((data) => {
+        if (!mounted) return;
+        const mapped: Recipe[] = (data || []).map((r) => ({
+          id: String((r as any).id),
+          name: (r as any).title || "",
+          description: (r as any).details || "",
+          timeCost: `${(r as any).timeCost?.hours || 0} h ${
+            (r as any).timeCost?.minutes || 0
+          } min`,
+          image: (r as any).photos?.[0] || "",
+        }));
+        setRecipes(mapped);
+      })
+      .catch((e: any) => setError(String(e?.message || e)))
+      .finally(() => setLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -133,6 +95,14 @@ export function CookingReceiptListPage({
         </View>
 
         <View style={styles.feed}>
+          {loading && (
+            <Text style={{ color: "#6B7280", marginBottom: 12 }}>
+              Loading...
+            </Text>
+          )}
+          {!!error && (
+            <Text style={{ color: "#DC2626", marginBottom: 12 }}>{error}</Text>
+          )}
           <FlatList
             data={recipes}
             keyExtractor={(r) => String(r.id)}

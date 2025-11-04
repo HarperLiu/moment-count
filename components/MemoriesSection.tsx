@@ -1,39 +1,46 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Image, FlatList } from "react-native";
-
-type Memory = { id: number; image: any; date: string };
+import { api } from "../app/api";
+type Memory = { id: string; image: string; date: string };
 
 export function MemoriesSection() {
-  const memories = useMemo<Memory[]>(
-    () => [
-      {
-        id: 1,
-        image: require("../assets/tree.jpg"),
-        date: "Oct 15, 2024",
-      },
-      {
-        id: 2,
-        image: require("../assets/banglow.jpg"),
-        date: "Sep 22, 2024",
-      },
-      {
-        id: 3,
-        image: require("../assets/mountain.jpg"),
-        date: "Aug 30, 2024",
-      },
-      {
-        id: 4,
-        image: require("../assets/shanghai.jpg"),
-        date: "Jul 12, 2024",
-      },
-    ],
-    []
-  );
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    api
+      .getMemories()
+      .then((data) => {
+        if (!mounted) return;
+        const mapped: Memory[] = (data || [])
+          .slice(0, 4)
+          .map((m) => ({
+            id: String((m as any).id),
+            image: (m as any).photos?.[0] || "",
+            date: (m as any).date || "",
+          }))
+          .filter((m) => !!m.image);
+        setMemories(mapped);
+      })
+      .catch((e: any) => setError(String(e?.message || e)))
+      .finally(() => setLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const renderItem = ({ item }: { item: Memory }) => (
     <View style={styles.item}>
       <View style={styles.card}>
-        <Image source={item.image} style={styles.photo} resizeMode="cover" />
+        <Image
+          source={{ uri: item.image }}
+          style={styles.photo}
+          resizeMode="cover"
+        />
       </View>
       <Text style={styles.date}>{item.date}</Text>
     </View>

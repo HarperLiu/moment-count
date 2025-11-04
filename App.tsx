@@ -17,30 +17,47 @@ import { MemoryListPage } from "./components/MemoryListPage";
 import { CookingReceiptListPage } from "./components/CookingReceiptListPage";
 import { AddMemoryPage } from "./components/AddMemoryPage";
 import { AddRecipePage } from "./components/AddRecipePage";
+import { api } from "./app/api";
 
 type PageKey = "home" | "memories" | "cooking" | "add-memory" | "add-recipe";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageKey>("home");
 
-  const handleSaveMemory = (memory: {
+  const handleSaveMemory = async (memory: {
     title: string;
     details: string;
     photos: string[];
     date: Date;
   }) => {
-    console.log("Saving memory:", memory);
-    setCurrentPage("memories");
+    try {
+      await api.createMemory({
+        title: memory.title,
+        details: memory.details,
+        photos: memory.photos,
+        date: memory.date.toISOString(),
+      });
+    } finally {
+      setCurrentPage("memories");
+    }
   };
 
-  const handleSaveRecipe = (recipe: {
+  const handleSaveRecipe = async (recipe: {
     title: string;
     details: string;
     photos: string[];
     timeCost: { hours: number; minutes: number };
   }) => {
-    console.log("Saving recipe:", recipe);
-    setCurrentPage("cooking");
+    try {
+      await api.createRecipe({
+        title: recipe.title,
+        details: recipe.details,
+        photos: recipe.photos,
+        timeCost: recipe.timeCost,
+      });
+    } finally {
+      setCurrentPage("cooking");
+    }
   };
 
   if (currentPage === "add-memory") {

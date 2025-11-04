@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Image, FlatList } from "react-native";
 import { Clock } from "lucide-react-native";
+import { api } from "../app/api";
 
 type MenuItem = {
-  id: number;
+  id: string;
   name: string;
   description: string;
   timeCost: string;
@@ -11,29 +12,35 @@ type MenuItem = {
 };
 
 export function MenuItems() {
-  const menuItems = useMemo<MenuItem[]>(
-    () => [
-      {
-        id: 1,
-        name: "Thai Seafood Glass Noodle",
-        description:
-          "A refreshing Thai salad made with tender glass noodles, fresh shrimp, squa...",
-        timeCost: "45 min",
-        image:
-          "https://images.unsplash.com/photo-1745209981037-a92f69e241d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0aGFpJTIwZ2xhc3MlMjBub29kbGVzJTIwc2VhZm9vZHxlbnwxfHx8fDE3NjE4ODE1NzZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-      {
-        id: 2,
-        name: "Japanese Ramen Bowl",
-        description:
-          "A rich and savory bowl of ramen noodles served in a fragrant broth, topped with...",
-        timeCost: "1 h 30 min",
-        image:
-          "https://images.unsplash.com/photo-1697652974652-a2336106043b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYXBhbmVzZSUyMHJhbWVuJTIwYm93bHxlbnwxfHx8fDE3NjE4ODE1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-      },
-    ],
-    []
-  );
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    api
+      .getRecipes()
+      .then((data) => {
+        if (!mounted) return;
+        const mapped: MenuItem[] = (data || []).slice(0, 5).map((r) => ({
+          id: String((r as any).id),
+          name: (r as any).title || "",
+          description: (r as any).details || "",
+          timeCost: `${(r as any).timeCost?.hours || 0} h ${
+            (r as any).timeCost?.minutes || 0
+          } min`,
+          image: (r as any).photos?.[0] || "",
+        }));
+        setMenuItems(mapped);
+      })
+      .catch((e: any) => setError(String(e?.message || e)))
+      .finally(() => setLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const renderItem = ({ item, index }: { item: MenuItem; index: number }) => (
     <View

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,11 @@ import {
   Image,
 } from "react-native";
 import { ArrowLeft, Plus } from "lucide-react-native";
+import { api } from "../app/api";
 
 type MemoryPhoto = { url: string; alt: string };
 type MemoryEntry = {
-  id: number;
+  id: string;
   headline: string;
   details: string;
   date: string;
@@ -71,86 +72,36 @@ export function MemoryListPage({
   onBack: () => void;
   onAddMemory: () => void;
 }) {
-  const memories = useMemo<MemoryEntry[]>(
-    () => [
-      {
-        id: 1,
-        headline: "Romantic Evening",
-        details:
-          "A perfect night under the stars, filled with laughter and joy. These are the moments we cherish forever.",
-        date: "Oct 28, 2024",
-        photos: [
-          {
-            url: "https://images.unsplash.com/photo-1758874089376-f8b08abd2c3d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjByb21hbnRpYyUyMG1vbWVudHxlbnwxfHx8fDE3NjE4NTI1MjN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Romantic moment",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1726251903562-4af66fc61634?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBiZWFjaCUyMHN1bnNldHxlbnwxfHx8fDE3NjE4NTc1MTB8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Beach sunset",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1562593326-19d00710d9bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBoYXBweSUyMHRvZ2V0aGVyfGVufDF8fHx8MTc2MTgwNjMzMXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Happy together",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1575390130709-7b5fee2919e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBkaW5uZXIlMjBkYXRlfGVufDF8fHx8MTc2MTg5MTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Dinner date",
-          },
-        ],
-      },
-      {
-        id: 2,
-        headline: "Adventure Days",
-        details:
-          "Exploring new places together, creating memories that will last a lifetime. Every journey is special with you.",
-        date: "Oct 15, 2024",
-        photos: [
-          {
-            url: "https://images.unsplash.com/photo-1739312023925-19eca8ca00aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjB0cmF2ZWwlMjBhZHZlbnR1cmV8ZW58MXx8fHwxNzYxODQyNjQzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Travel adventure",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1710950284428-b58302c09b0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBjaXR5JTIwd2Fsa2luZ3xlbnwxfHx8fDE3NjE4OTE0Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "City walking",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1758874089376-f8b08abd2c3d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjByb21hbnRpYyUyMG1vbWVudHxlbnwxfHx8fDE3NjE4NTI1MjN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Romantic moment",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1726251903562-4af66fc61634?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBiZWFjaCUyMHN1bnNldHxlbnwxfHx8fDE3NjE4NTc1MTB8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Beach sunset",
-          },
-        ],
-      },
-      {
-        id: 3,
-        headline: "Cozy Moments",
-        details:
-          "Sometimes the best memories are made in the simplest moments. Just being together is enough.",
-        date: "Sep 30, 2024",
-        photos: [
-          {
-            url: "https://images.unsplash.com/photo-1575390130709-7b5fee2919e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBkaW5uZXIlMjBkYXRlfGVufDF8fHx8MTc2MTg5MTQ3NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Dinner date",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1562593326-19d00710d9bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBoYXBweSUyMHRvZ2V0aGVyfGVufDF8fHx8MTc2MTgwNjMzMXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Happy together",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1710950284428-b58302c09b0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBjaXR5JTIwd2Fsa2luZ3xlbnwxfHx8fDE3NjE4OTE0Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "City walking",
-          },
-          {
-            url: "https://images.unsplash.com/photo-1739312023925-19eca8ca00aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjB0cmF2ZWwlMjBhZHZlbnR1cmV8ZW58MXx8fHwxNzYxODQyNjQzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-            alt: "Travel adventure",
-          },
-        ],
-      },
-    ],
-    []
-  );
+  const [memories, setMemories] = useState<MemoryEntry[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    api
+      .getMemories()
+      .then((data) => {
+        if (!mounted) return;
+        const mapped: MemoryEntry[] = (data || []).map((m) => ({
+          id: String((m as any).id),
+          headline: (m as any).title || "",
+          details: (m as any).details || "",
+          date: (m as any).date || "",
+          photos: ((m as any).photos || []).map((p: string) => ({
+            url: p,
+            alt: "",
+          })),
+        }));
+        setMemories(mapped);
+      })
+      .catch((e: any) => setError(String(e?.message || e)))
+      .finally(() => setLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -170,6 +121,14 @@ export function MemoryListPage({
         </View>
 
         <View style={styles.feed}>
+          {loading && (
+            <Text style={{ color: "#6B7280", marginBottom: 12 }}>
+              Loading...
+            </Text>
+          )}
+          {!!error && (
+            <Text style={{ color: "#DC2626", marginBottom: 12 }}>{error}</Text>
+          )}
           {memories.map((m) => (
             <View key={m.id} style={{ marginBottom: 16 }}>
               <MemoryCard memory={m} />
