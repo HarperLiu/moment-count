@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList } from "react-native";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import { View, Text, StyleSheet, FlatList, Animated } from "react-native";
+import { Image } from "expo-image";
 import { api } from "../app/api";
 type Memory = { id: string; image: string; date: string };
 
@@ -18,10 +19,67 @@ function formatDate(dateString: string): string {
   }
 }
 
+// Skeleton component with shimmer effect
+function SkeletonBox({
+  width,
+  height,
+  style,
+}: {
+  width?: number | string;
+  height: number;
+  style?: any;
+}) {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmerAnim, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width: width || "100%",
+          height,
+          backgroundColor: "#E5E7EB",
+          borderRadius: 8,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+}
+
 export function MemoriesSection() {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const skeletonData = useMemo(
+    () =>
+      Array.from({ length: 4 }).map(
+        (_, i) => ({ id: `sk-${i}` } as unknown as Memory)
+      ),
+    []
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -51,19 +109,34 @@ export function MemoriesSection() {
   const renderItem = ({ item }: { item: Memory }) => (
     <View style={styles.item}>
       <View style={styles.card}>
-        <Image
-          source={{ uri: item.image }}
-          style={styles.photo}
-          resizeMode="cover"
-        />
+        {loading ? (
+          <SkeletonBox width="100%" height={150} style={{ borderRadius: 16 }} />
+        ) : (
+          <Image
+            source={{ uri: item.image }}
+            style={styles.photo}
+            contentFit="cover"
+            transition={200}
+            cachePolicy="memory-disk"
+            recyclingKey={item.image}
+          />
+        )}
       </View>
-      <Text style={styles.date}>{formatDate(item.date)}</Text>
+      {loading ? (
+        <SkeletonBox
+          width={60}
+          height={12}
+          style={{ marginTop: 8, alignSelf: "center", borderRadius: 4 }}
+        />
+      ) : (
+        <Text style={styles.date}>{formatDate(item.date)}</Text>
+      )}
     </View>
   );
 
   return (
     <FlatList
-      data={memories}
+      data={loading ? skeletonData : memories}
       keyExtractor={(m) => String(m.id)}
       renderItem={renderItem}
       numColumns={2}
@@ -95,7 +168,7 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: "100%",
-    aspectRatio: 4 / 3,
+    aspectRatio: 1,
     height: undefined,
   },
   date: {

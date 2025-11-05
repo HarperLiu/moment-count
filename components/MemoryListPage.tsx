@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Image,
   ActivityIndicator,
 } from "react-native";
+import { Image } from "expo-image";
 import { ArrowLeft, Plus } from "lucide-react-native";
 import { api } from "../app/api";
 
@@ -61,7 +61,14 @@ function PhotoGrid({ photos }: { photos: MemoryPhoto[] }) {
     <View style={styles.grid2}>
       {photos.map((p, i) => (
         <View key={i} style={styles.gridItem}>
-          <Image source={{ uri: p.url }} style={styles.gridPhoto} />
+          <Image
+            source={{ uri: p.url }}
+            style={styles.gridPhoto}
+            contentFit="cover"
+            transition={200}
+            cachePolicy="memory-disk"
+            recyclingKey={p.url}
+          />
         </View>
       ))}
     </View>

@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Image,
   FlatList,
   ActivityIndicator,
 } from "react-native";
+import { Image } from "expo-image";
 import { ArrowLeft, Plus, Clock } from "lucide-react-native";
 import { api } from "../app/api";
 
@@ -43,7 +43,14 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
         </View>
       </View>
       <View>
-        <Image source={{ uri: recipe.image }} style={styles.cover} />
+        <Image
+          source={{ uri: recipe.image }}
+          style={styles.cover}
+          contentFit="cover"
+          transition={200}
+          cachePolicy="memory-disk"
+          recyclingKey={recipe.image}
+        />
       </View>
     </View>
   );

@@ -7,8 +7,8 @@ import {
   SafeAreaView,
   ScrollView,
   TextInput,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { ArrowLeft, Image as ImageIcon, Clock, X } from "lucide-react-native";
@@ -164,7 +164,13 @@ export function AddRecipePage({
               >
                 {photos.map((uri, idx) => (
                   <View key={idx} style={styles.thumbBox}>
-                    <Image source={{ uri }} style={styles.thumb} />
+                    <Image
+                      source={{ uri }}
+                      style={styles.thumb}
+                      contentFit="cover"
+                      transition={200}
+                      cachePolicy="memory-disk"
+                    />
                     <TouchableOpacity
                       onPress={() => handleRemovePhoto(idx)}
                       style={styles.thumbRemove}

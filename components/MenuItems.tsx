@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList } from "react-native";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import { View, Text, StyleSheet, FlatList, Animated } from "react-native";
+import { Image } from "expo-image";
 import { Clock } from "lucide-react-native";
 import { api } from "../app/api";
 
@@ -19,6 +20,56 @@ function formatTimeCost(hours: number, minutes: number): string {
   return `${hours} h ${minutes} min`;
 }
 
+// Skeleton component with shimmer effect
+function SkeletonBox({
+  width,
+  height,
+  style,
+}: {
+  width?: number | string;
+  height: number;
+  style?: any;
+}) {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmerAnim, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width: width || "100%",
+          height,
+          backgroundColor: "#E5E7EB",
+          borderRadius: 8,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+}
+
 export function MenuItems() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -32,7 +83,7 @@ export function MenuItems() {
       .getRecipes()
       .then((data) => {
         if (!mounted) return;
-        const mapped: MenuItem[] = (data || []).slice(0, 5).map((r) => ({
+        const mapped: MenuItem[] = (data || []).slice(0, 3).map((r) => ({
           id: String((r as any).id),
           name: (r as any).title || "",
           description: (r as any).details || "",
@@ -66,10 +117,67 @@ export function MenuItems() {
         </View>
       </View>
       <View>
-        <Image source={{ uri: item.image }} style={styles.cover} />
+        <Image
+          source={{ uri: item.image }}
+          style={styles.cover}
+          contentFit="cover"
+          transition={200}
+          cachePolicy="memory-disk"
+          recyclingKey={item.image}
+        />
       </View>
     </View>
   );
+
+  if (loading) {
+    // Receipt skeleton: 3 rows, each row has title, description, time, and image
+    return (
+      <>
+        {[1, 2, 3].map((i) => (
+          <View key={i} style={{ marginBottom: i !== 3 ? 16 : 0 }}>
+            <View style={[styles.row, i !== 3 && styles.rowBorder]}>
+              <View style={styles.flex1}>
+                <SkeletonBox
+                  width={140}
+                  height={16}
+                  style={{ marginBottom: 4, borderRadius: 4 }}
+                />
+                <SkeletonBox
+                  width="100%"
+                  height={13}
+                  style={{ marginBottom: 4, borderRadius: 4 }}
+                />
+                <SkeletonBox
+                  width="85%"
+                  height={13}
+                  style={{ marginBottom: 8, borderRadius: 4 }}
+                />
+                <View style={styles.timeRow}>
+                  <SkeletonBox
+                    width={14}
+                    height={14}
+                    style={{ borderRadius: 7 }}
+                  />
+                  <SkeletonBox
+                    width={60}
+                    height={13}
+                    style={{ marginLeft: 4, borderRadius: 4 }}
+                  />
+                </View>
+              </View>
+              <View>
+                <SkeletonBox
+                  width={96}
+                  height={96}
+                  style={{ borderRadius: 16 }}
+                />
+              </View>
+            </View>
+          </View>
+        ))}
+      </>
+    );
+  }
 
   return (
     <FlatList
