@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { ArrowLeft, Plus } from "lucide-react-native";
 import { api } from "../app/api";
@@ -19,6 +20,21 @@ type MemoryEntry = {
   date: string;
   photos: MemoryPhoto[];
 };
+
+// Format date to yyyy-mm-dd
+function formatDate(dateString: string): string {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } catch {
+    return dateString;
+  }
+}
 
 function HeadlineAndDetails({
   headline,
@@ -33,7 +49,7 @@ function HeadlineAndDetails({
     <View style={{ gap: 6 }}>
       <View style={styles.headlineRow}>
         <Text style={styles.cardTitle}>{headline}</Text>
-        <Text style={styles.cardDate}>{date}</Text>
+        <Text style={styles.cardDate}>{formatDate(date)}</Text>
       </View>
       <Text style={styles.cardDetails}>{details}</Text>
     </View>
@@ -122,23 +138,30 @@ export function MemoryListPage({
 
         <View style={styles.feed}>
           {loading && (
-            <Text style={{ color: "#6B7280", marginBottom: 12 }}>
-              Loading...
-            </Text>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#F97316" />
+              <Text style={styles.loadingText}>Loading memories...</Text>
+            </View>
           )}
           {!!error && (
-            <Text style={{ color: "#DC2626", marginBottom: 12 }}>{error}</Text>
-          )}
-          {memories.map((m) => (
-            <View key={m.id} style={{ marginBottom: 16 }}>
-              <MemoryCard memory={m} />
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
             </View>
-          ))}
-          <View style={styles.endRow}>
-            <View style={styles.endLine} />
-            <Text style={styles.endText}>More is coming</Text>
-            <View style={styles.endLine} />
-          </View>
+          )}
+          {!loading && !error && (
+            <>
+              {memories.map((m) => (
+                <View key={m.id} style={{ marginBottom: 16 }}>
+                  <MemoryCard memory={m} />
+                </View>
+              ))}
+              <View style={styles.endRow}>
+                <View style={styles.endLine} />
+                <Text style={styles.endText}>More is coming</Text>
+                <View style={styles.endLine} />
+              </View>
+            </>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -214,4 +237,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#E5E7EB",
   },
   endText: { fontSize: 13, color: "#94A3B8" },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  errorContainer: {
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "#DC2626",
+    textAlign: "center",
+  },
 });

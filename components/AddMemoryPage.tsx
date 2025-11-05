@@ -19,6 +19,14 @@ import {
   X,
 } from "lucide-react-native";
 
+// Format date to yyyy-mm-dd
+function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function AddMemoryPage({
   onBack,
   onSave,
@@ -91,7 +99,7 @@ export function AddMemoryPage({
             style={styles.inputRow}
             onPress={() => setShowPicker(true)}
           >
-            <Text style={styles.inputText}>{date.toDateString()}</Text>
+            <Text style={styles.inputText}>{formatDate(date)}</Text>
             <CalendarIcon size={16} color="#94A3B8" />
           </TouchableOpacity>
           {showPicker && (

@@ -3,6 +3,21 @@ import { View, Text, StyleSheet, Image, FlatList } from "react-native";
 import { api } from "../app/api";
 type Memory = { id: string; image: string; date: string };
 
+// Format date to yyyy-mm-dd
+function formatDate(dateString: string): string {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } catch {
+    return dateString;
+  }
+}
+
 export function MemoriesSection() {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -42,7 +57,7 @@ export function MemoriesSection() {
           resizeMode="cover"
         />
       </View>
-      <Text style={styles.date}>{item.date}</Text>
+      <Text style={styles.date}>{formatDate(item.date)}</Text>
     </View>
   );
 

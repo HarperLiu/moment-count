@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { ArrowLeft, Plus, Clock } from "lucide-react-native";
 import { api } from "../app/api";
@@ -19,6 +20,14 @@ type Recipe = {
   timeCost: string;
   image: string;
 };
+
+// Format time cost: if hours is 0, only show minutes
+function formatTimeCost(hours: number, minutes: number): string {
+  if (hours === 0) {
+    return `${minutes} min`;
+  }
+  return `${hours} h ${minutes} min`;
+}
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
@@ -63,9 +72,10 @@ export function CookingReceiptListPage({
           id: String((r as any).id),
           name: (r as any).title || "",
           description: (r as any).details || "",
-          timeCost: `${(r as any).timeCost?.hours || 0} h ${
+          timeCost: formatTimeCost(
+            (r as any).timeCost?.hours || 0,
             (r as any).timeCost?.minutes || 0
-          } min`,
+          ),
           image: (r as any).photos?.[0] || "",
         }));
         setRecipes(mapped);
@@ -96,31 +106,39 @@ export function CookingReceiptListPage({
 
         <View style={styles.feed}>
           {loading && (
-            <Text style={{ color: "#6B7280", marginBottom: 12 }}>
-              Loading...
-            </Text>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#F97316" />
+              <Text style={styles.loadingText}>Loading recipes...</Text>
+            </View>
           )}
           {!!error && (
-            <Text style={{ color: "#DC2626", marginBottom: 12 }}>{error}</Text>
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
           )}
-          <FlatList
-            data={recipes}
-            keyExtractor={(r) => String(r.id)}
-            renderItem={({ item, index }) => (
-              <View
-                style={{ marginBottom: index === recipes.length - 1 ? 0 : 16 }}
-              >
-                <RecipeCard recipe={item} />
+          {!loading && !error && (
+            <>
+              <FlatList
+                data={recipes}
+                keyExtractor={(r) => String(r.id)}
+                renderItem={({ item, index }) => (
+                  <View
+                    style={{
+                      marginBottom: index === recipes.length - 1 ? 0 : 16,
+                    }}
+                  >
+                    <RecipeCard recipe={item} />
+                  </View>
+                )}
+                scrollEnabled={false}
+              />
+              <View style={styles.endRow}>
+                <View style={styles.endLine} />
+                <Text style={styles.endText}>More is coming</Text>
+                <View style={styles.endLine} />
               </View>
-            )}
-            scrollEnabled={false}
-          />
-
-          <View style={styles.endRow}>
-            <View style={styles.endLine} />
-            <Text style={styles.endText}>More is coming</Text>
-            <View style={styles.endLine} />
-          </View>
+            </>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -178,6 +196,31 @@ const styles = StyleSheet.create({
     backgroundColor: "#E5E7EB",
   },
   endText: { fontSize: 13, color: "#94A3B8", marginHorizontal: 12 },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  errorContainer: {
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "#DC2626",
+    textAlign: "center",
+  },
 });
 
 // removed legacy styles from placeholder implementation

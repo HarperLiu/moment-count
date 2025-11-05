@@ -11,6 +11,14 @@ type MenuItem = {
   image: string;
 };
 
+// Format time cost: if hours is 0, only show minutes
+function formatTimeCost(hours: number, minutes: number): string {
+  if (hours === 0) {
+    return `${minutes} min`;
+  }
+  return `${hours} h ${minutes} min`;
+}
+
 export function MenuItems() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -28,9 +36,10 @@ export function MenuItems() {
           id: String((r as any).id),
           name: (r as any).title || "",
           description: (r as any).details || "",
-          timeCost: `${(r as any).timeCost?.hours || 0} h ${
+          timeCost: formatTimeCost(
+            (r as any).timeCost?.hours || 0,
             (r as any).timeCost?.minutes || 0
-          } min`,
+          ),
           image: (r as any).photos?.[0] || "",
         }));
         setMenuItems(mapped);
