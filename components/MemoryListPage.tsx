@@ -107,16 +107,22 @@ export function MemoryListPage({
       .getMemories()
       .then((data) => {
         if (!mounted) return;
-        const mapped: MemoryEntry[] = (data || []).map((m) => ({
-          id: String((m as any).id),
-          headline: (m as any).title || "",
-          details: (m as any).details || "",
-          date: (m as any).date || "",
-          photos: ((m as any).photos || []).map((p: string) => ({
-            url: p,
-            alt: "",
-          })),
-        }));
+        const mapped: MemoryEntry[] = (data || [])
+          .map((m) => ({
+            id: String((m as any).id),
+            headline: (m as any).title || "",
+            details: (m as any).details || "",
+            date: (m as any).date || "",
+            photos: ((m as any).photos || []).map((p: string) => ({
+              url: p,
+              alt: "",
+            })),
+          }))
+          .sort((a, b) => {
+            const ta = new Date(a.date).getTime() || 0;
+            const tb = new Date(b.date).getTime() || 0;
+            return tb - ta;
+          });
         setMemories(mapped);
       })
       .catch((e: any) => setError(String(e?.message || e)))

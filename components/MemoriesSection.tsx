@@ -90,13 +90,18 @@ export function MemoriesSection() {
       .then((data) => {
         if (!mounted) return;
         const mapped: Memory[] = (data || [])
-          .slice(0, 4)
           .map((m) => ({
             id: String((m as any).id),
             image: (m as any).photos?.[0] || "",
             date: (m as any).date || "",
           }))
-          .filter((m) => !!m.image);
+          .filter((m) => !!m.image)
+          .sort((a, b) => {
+            const ta = new Date(a.date).getTime() || 0;
+            const tb = new Date(b.date).getTime() || 0;
+            return tb - ta;
+          })
+          .slice(0, 4);
         setMemories(mapped);
       })
       .catch((e: any) => setError(String(e?.message || e)))

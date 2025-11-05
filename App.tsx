@@ -31,11 +31,14 @@ export default function App() {
     date: Date;
   }) => {
     try {
+      const y = memory.date.getFullYear();
+      const m = String(memory.date.getMonth() + 1).padStart(2, "0");
+      const d = String(memory.date.getDate()).padStart(2, "0");
       await api.createMemory({
         title: memory.title,
         details: memory.details,
         photos: memory.photos,
-        date: memory.date.toISOString(),
+        date: `${y}-${m}-${d}`,
       });
     } finally {
       setCurrentPage("memories");
@@ -101,42 +104,41 @@ export default function App() {
       <ExpoStatusBar style="dark" backgroundColor="#E5E7EB" />
       <View style={styles.phoneContainer}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Hero Image */}
-          <View style={styles.heroWrapper}>
-            <Image
-              source={require("./assets/background.jpg")}
-              resizeMode="cover"
-              style={styles.heroImage}
-            />
-          </View>
-
-          {/* Restaurant Info */}
-          <RestaurantHeader />
-
-          {/* Info Cards */}
-          <InfoCards />
-
-          {/* Memories Section */}
-          <View style={styles.sectionWrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Memory</Text>
-              <TouchableOpacity onPress={() => setCurrentPage("memories")}>
-                <Text style={styles.linkText}>See more</Text>
-              </TouchableOpacity>
+            {/* Hero Image */}
+            <View style={styles.heroWrapper}>
+              <Image
+                source={require("./assets/background.jpg")}
+                resizeMode="cover"
+                style={styles.heroImage}
+              />
             </View>
-            <MemoriesSection />
-          </View>
 
-          {/* Cooking Receipt Section */}
-          <View style={styles.sectionWrapperBottom}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Cooking Receipt</Text>
-              <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
-                <Text style={styles.linkText}>See more</Text>
-              </TouchableOpacity>
+            {/* Restaurant Info */}
+            <RestaurantHeader />
+
+            {/* Info Cards */}
+            <InfoCards />
+
+            {/* Memories Section */}
+            <View style={styles.sectionWrapper}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Memory</Text>
+                <TouchableOpacity onPress={() => setCurrentPage("memories")}>
+                  <Text style={styles.linkText}>See more</Text>
+                </TouchableOpacity>
+              </View>
+              <MemoriesSection />
             </View>
-            <MenuItems />
-          </View>
+
+            {/* Cooking Receipt Section */}
+            <View style={styles.sectionWrapperBottom}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Cooking Receipt</Text>
+                <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
+                  <Text style={styles.linkText}>See more</Text>
+                </TouchableOpacity>
+              </View>
+              <MenuItems />
         </ScrollView>
       </View>
     </View>
