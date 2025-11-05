@@ -88,6 +88,18 @@ export const api = {
       method: "POST",
       body: payload,
     }).then((r) => r.data),
+
+  // Location/Distance related (server should implement these endpoints)
+  postMyLocation: (payload: {
+    lat: number;
+    lon: number;
+    userId: string;
+  }): Promise<void> =>
+    http<void>("/location", { method: "POST", body: payload }),
+  getOtherLocation: (userId: string): Promise<{ lat: number; lon: number }> =>
+    http<{ data: { lat: number; lon: number } }>(
+      `/location/other?user_id=${encodeURIComponent(userId)}`
+    ).then((r) => r.data),
 };
 
 export { BASE_URL };

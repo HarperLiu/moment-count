@@ -10,15 +10,29 @@ import {
   ThermometerSun,
 } from "lucide-react-native";
 import * as Location from "expo-location";
+import { api } from "../app/api";
 
 export function InfoCards() {
   const [tempC, setTempC] = useState<number | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
 
   const daysTogether = useMemo(() => {
-    const startDate = new Date("2025-09-03").getTime();
-    const today = Date.now();
-    return Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    // Calculate whole-day difference between today and 2025-09-03 (inclusive of date boundaries)
+    const start = new Date("2025-09-03T00:00:00Z");
+    const now = new Date();
+    const startUTC = Date.UTC(
+      start.getUTCFullYear(),
+      start.getUTCMonth(),
+      start.getUTCDate()
+    );
+    const nowUTC = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    );
+    const diffDays = Math.floor((nowUTC - startUTC) / (1000 * 60 * 60 * 24));
+    return diffDays;
   }, []);
 
   useEffect(() => {
@@ -33,12 +47,41 @@ export function InfoCards() {
         const loc = await Location.getCurrentPositionAsync({});
         const lat = loc.coords.latitude;
         const lon = loc.coords.longitude;
+        const userId = "me";
         // Open-Meteo current weather API (no API key required)
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m`;
         const resp = await fetch(url);
         const json = await resp.json();
         const value = json?.current?.temperature_2m;
         if (mounted && typeof value === "number") setTempC(value);
+
+        // Upload my location
+        await api.postMyLocation({ lat, lon, userId }).catch(() => {});
+        // Fetch other location from server
+        const other = await api.getOtherLocation(userId).catch(() => ({
+          lat: undefined as unknown as number,
+          lon: undefined as unknown as number,
+        }));
+        if (
+          mounted &&
+          typeof other?.lat === "number" &&
+          typeof other?.lon === "number"
+        ) {
+          // Haversine distance in km
+          const toRad = (deg: number) => (deg * Math.PI) / 180;
+          const R = 6371; // km
+          const dLat = toRad(other.lat - lat);
+          const dLon = toRad(other.lon - lon);
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat)) *
+              Math.cos(toRad(other.lat)) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const d = R * c;
+          setDistanceKm(d);
+        }
       } catch (e: any) {
         if (mounted) setWeatherError(String(e?.message || e));
       }
@@ -75,7 +118,10 @@ export function InfoCards() {
           <MapPin size={20} color="#111827" />
           <View style={styles.cardCol}>
             <Text style={styles.metric}>
-              <Text style={styles.metricStrong}>17</Text> KMs
+              <Text style={styles.metricStrong}>
+                {distanceKm != null ? Math.max(distanceKm, 0).toFixed(1) : "--"}
+              </Text>{" "}
+              KMs
             </Text>
           </View>
         </View>
