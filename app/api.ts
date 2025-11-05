@@ -60,6 +60,14 @@ export type ServerRecipe = {
   timeCost?: { hours: number; minutes: number };
 };
 
+export type ServerUser = {
+  id: string;
+  uuid: string;
+  name?: string;
+  slogan?: string;
+  avatar?: string;
+};
+
 export const api = {
   // Wrap server's { data: T } to return T directly for existing callers
   getMemories: async (): Promise<ServerMemory[]> => {
@@ -100,6 +108,24 @@ export const api = {
     http<{ data: { lat: number; lon: number } }>(
       `/location/other?user_id=${encodeURIComponent(userId)}`
     ).then((r) => r.data),
+
+  // Users
+  upsertUser: (payload: {
+    uuid: string;
+    name: string;
+    slogan: string;
+    avatar: string;
+  }): Promise<ServerUser> =>
+    http<{ data: ServerUser }>("/users", {
+      method: "POST",
+      body: payload,
+    }).then((r) => r.data),
+  getUserByUuid: (uuid: string): Promise<ServerUser | null> =>
+    http<{ data: ServerUser } | undefined>(
+      `/users?uuid=${encodeURIComponent(uuid)}`
+    )
+      .then((r) => (r as any)?.data || null)
+      .catch(() => null),
 };
 
 export { BASE_URL };

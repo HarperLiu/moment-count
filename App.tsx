@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
-import { RestaurantHeader } from "./components/RestaurantHeader";
 import { InfoCards } from "./components/InfoCards";
 import { MemoriesSection } from "./components/MemoriesSection";
 import { MenuItems } from "./components/MenuItems";
@@ -17,12 +16,61 @@ import { MemoryListPage } from "./components/MemoryListPage";
 import { CookingReceiptListPage } from "./components/CookingReceiptListPage";
 import { AddMemoryPage } from "./components/AddMemoryPage";
 import { AddRecipePage } from "./components/AddRecipePage";
+import { AuthPage } from "./components/AuthPage";
 import { api } from "./app/api";
+import { UserInfo } from "./components/UserInfo";
 
-type PageKey = "home" | "memories" | "cooking" | "add-memory" | "add-recipe";
+type PageKey =
+  | "auth"
+  | "home"
+  | "memories"
+  | "cooking"
+  | "add-memory"
+  | "add-recipe";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageKey>("home");
+  const [currentPage, setCurrentPage] = useState<PageKey>("auth");
+  const [bootstrapped, setBootstrapped] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // dynamic require to avoid type resolution at build time
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const AsyncStorage =
+          require("@react-native-async-storage/async-storage").default as {
+            getItem: (k: string) => Promise<string | null>;
+            setItem: (k: string, v: string) => Promise<void>;
+          };
+        const uuid = await AsyncStorage.getItem("user:uuid");
+        if (uuid) {
+          try {
+            const { api } = await import("./app/api");
+            const serverUser = await api.getUserByUuid(uuid);
+            if (serverUser) {
+              const profile = {
+                uuid: serverUser.uuid,
+                name: serverUser.name || "",
+                slogan: serverUser.slogan || "",
+                avatar: serverUser.avatar || "",
+              };
+              await AsyncStorage.setItem(
+                "user:profile",
+                JSON.stringify(profile)
+              );
+            }
+          } catch {}
+          setCurrentPage("home");
+        } else {
+          setCurrentPage("auth");
+        }
+      } catch {
+        setCurrentPage("auth");
+      } finally {
+        setBootstrapped(true);
+      }
+    })();
+  }, []);
 
   const handleSaveMemory = async (memory: {
     title: string;
@@ -62,6 +110,14 @@ export default function App() {
       setCurrentPage("cooking");
     }
   };
+
+  if (!bootstrapped) {
+    return <View style={{ flex: 1, backgroundColor: "#F8FAFC" }} />;
+  }
+
+  if (currentPage === "auth") {
+    return <AuthPage onRegistered={() => setCurrentPage("home")} />;
+  }
 
   if (currentPage === "add-memory") {
     return (
@@ -113,8 +169,8 @@ export default function App() {
             />
           </View>
 
-          {/* Restaurant Info */}
-          <RestaurantHeader />
+          {/* User Info */}
+          <UserInfo />
 
           {/* Info Cards */}
           <InfoCards />

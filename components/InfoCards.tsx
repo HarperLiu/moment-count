@@ -47,7 +47,15 @@ export function InfoCards() {
         const loc = await Location.getCurrentPositionAsync({});
         const lat = loc.coords.latitude;
         const lon = loc.coords.longitude;
-        const userId = "me";
+        // Read cached uuid from AsyncStorage; fallback to 'anonymous'
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const AsyncStorage =
+          require("@react-native-async-storage/async-storage").default as {
+            getItem: (k: string) => Promise<string | null>;
+          };
+        const cachedUuid =
+          (await AsyncStorage.getItem("user:uuid")) || "anonymous";
+        const userId = cachedUuid;
         // Open-Meteo current weather API (no API key required)
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m`;
         const resp = await fetch(url);
@@ -119,9 +127,9 @@ export function InfoCards() {
           <View style={styles.cardCol}>
             <Text style={styles.metric}>
               <Text style={styles.metricStrong}>
-                {distanceKm != null ? Math.max(distanceKm, 0).toFixed(1) : "--"}
+                {distanceKm != null ? Math.max(distanceKm, 0).toFixed(0) : "--"}
               </Text>{" "}
-              KMs
+              Km
             </Text>
           </View>
         </View>
