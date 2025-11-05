@@ -115,7 +115,7 @@ export function MemoriesSection() {
     <View style={styles.item}>
       <View style={styles.card}>
         {loading ? (
-          <SkeletonBox width="100%" height={150} style={{ borderRadius: 16 }} />
+          <SkeletonBox width="100%" height={120} style={{ borderRadius: 16 }} />
         ) : (
           <Image
             source={{ uri: item.image }}
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: "100%",
-    aspectRatio: 1,
+    aspectRatio: 4 / 3,
     height: undefined,
   },
   date: {
