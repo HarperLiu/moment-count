@@ -104,41 +104,42 @@ export default function App() {
       <ExpoStatusBar style="dark" backgroundColor="#E5E7EB" />
       <View style={styles.phoneContainer}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-            {/* Hero Image */}
-            <View style={styles.heroWrapper}>
-              <Image
-                source={require("./assets/background.jpg")}
-                resizeMode="cover"
-                style={styles.heroImage}
-              />
+          {/* Hero Image */}
+          <View style={styles.heroWrapper}>
+            <Image
+              source={require("./assets/background.jpg")}
+              resizeMode="cover"
+              style={styles.heroImage}
+            />
+          </View>
+
+          {/* Restaurant Info */}
+          <RestaurantHeader />
+
+          {/* Info Cards */}
+          <InfoCards />
+
+          {/* Memories Section */}
+          <View style={styles.sectionWrapper}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Memory</Text>
+              <TouchableOpacity onPress={() => setCurrentPage("memories")}>
+                <Text style={styles.linkText}>See more</Text>
+              </TouchableOpacity>
             </View>
+            <MemoriesSection />
+          </View>
 
-            {/* Restaurant Info */}
-            <RestaurantHeader />
-
-            {/* Info Cards */}
-            <InfoCards />
-
-            {/* Memories Section */}
-            <View style={styles.sectionWrapper}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Memory</Text>
-                <TouchableOpacity onPress={() => setCurrentPage("memories")}>
-                  <Text style={styles.linkText}>See more</Text>
-                </TouchableOpacity>
-              </View>
-              <MemoriesSection />
+          {/* Cooking Receipt Section */}
+          <View style={styles.sectionWrapperBottom}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Cooking Receipt</Text>
+              <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
+                <Text style={styles.linkText}>See more</Text>
+              </TouchableOpacity>
             </View>
-
-            {/* Cooking Receipt Section */}
-            <View style={styles.sectionWrapperBottom}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Cooking Receipt</Text>
-                <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
-                  <Text style={styles.linkText}>See more</Text>
-                </TouchableOpacity>
-              </View>
-              <MenuItems />
+            <MenuItems />
+          </View>
         </ScrollView>
       </View>
     </View>
