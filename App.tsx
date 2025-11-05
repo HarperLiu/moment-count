@@ -19,6 +19,7 @@ import { AddRecipePage } from "./components/AddRecipePage";
 import { AuthPage } from "./components/AuthPage";
 import { api } from "./app/api";
 import { UserInfo } from "./components/UserInfo";
+import { useTheme } from "./styles/useTheme";
 
 type PageKey =
   | "auth"
@@ -29,6 +30,7 @@ type PageKey =
   | "add-recipe";
 
 export default function App() {
+  const theme = useTheme();
   const [currentPage, setCurrentPage] = useState<PageKey>("auth");
   const [bootstrapped, setBootstrapped] = useState(false);
 
@@ -156,9 +158,11 @@ export default function App() {
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: theme.colorBackground }]}>
       <ExpoStatusBar style="dark" backgroundColor="#E5E7EB" />
-      <View style={styles.phoneContainer}>
+      <View
+        style={[styles.phoneContainer, { backgroundColor: theme.colorCard }]}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Hero Image */}
           <View style={styles.heroWrapper}>

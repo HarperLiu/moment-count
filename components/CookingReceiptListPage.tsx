@@ -8,10 +8,13 @@ import {
   ScrollView,
   FlatList,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { Image } from "expo-image";
 import { ArrowLeft, Plus, Clock } from "lucide-react-native";
 import { api } from "../app/api";
+import { useTheme } from "../styles/useTheme";
+import { RecipeDetailCard } from "./RecipeDetailCard";
 
 type Recipe = {
   id: string;
@@ -34,7 +37,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
     <View style={[styles.row, styles.rowBorder]}>
       <View style={styles.flex1}>
         <Text style={styles.name}>{recipe.name}</Text>
-        <Text style={styles.desc} numberOfLines={2}>
+        <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
           {recipe.description}
         </Text>
         <View style={styles.timeRow}>
@@ -63,9 +66,11 @@ export function CookingReceiptListPage({
   onBack: () => void;
   onAddRecipe: () => void;
 }) {
+  const theme = useTheme();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Recipe | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -95,18 +100,32 @@ export function CookingReceiptListPage({
   }, []);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
+    >
       <ScrollView stickyHeaderIndices={[0]}>
-        <View style={styles.stickyHeader}>
+        <View
+          style={[
+            styles.stickyHeader,
+            {
+              backgroundColor: theme.colorBackground,
+              borderBottomColor: theme.colorBorder,
+            },
+          ]}
+        >
           <View style={styles.stickyRow}>
             <View style={styles.leftGroup}>
               <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color="#111827" />
+                <ArrowLeft size={20} color={theme.colorForeground} />
               </TouchableOpacity>
-              <Text style={styles.pageTitle}>Cooking Receipt</Text>
+              <Text
+                style={[styles.pageTitle, { color: theme.colorForeground }]}
+              >
+                Cooking Receipt
+              </Text>
             </View>
             <TouchableOpacity onPress={onAddRecipe} style={styles.iconBtn}>
-              <Plus size={20} color="#111827" />
+              <Plus size={20} color={theme.colorForeground} />
             </TouchableOpacity>
           </View>
         </View>
@@ -115,7 +134,14 @@ export function CookingReceiptListPage({
           {loading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#F97316" />
-              <Text style={styles.loadingText}>Loading recipes...</Text>
+              <Text
+                style={[
+                  styles.loadingText,
+                  { color: theme.colorMutedForeground },
+                ]}
+              >
+                Loading recipes...
+              </Text>
             </View>
           )}
           {!!error && (
@@ -134,15 +160,40 @@ export function CookingReceiptListPage({
                       marginBottom: index === recipes.length - 1 ? 0 : 16,
                     }}
                   >
-                    <RecipeCard recipe={item} />
+                    <Pressable onPress={() => setSelected(item)}>
+                      <RecipeCard recipe={item} />
+                    </Pressable>
                   </View>
                 )}
                 scrollEnabled={false}
               />
+              {selected && (
+                <RecipeDetailCard
+                  recipe={selected}
+                  onClose={() => setSelected(null)}
+                />
+              )}
               <View style={styles.endRow}>
-                <View style={styles.endLine} />
-                <Text style={styles.endText}>More is coming</Text>
-                <View style={styles.endLine} />
+                <View
+                  style={[
+                    styles.endLine,
+                    { backgroundColor: theme.colorBorder },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.endText,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
+                  More is coming
+                </Text>
+                <View
+                  style={[
+                    styles.endLine,
+                    { backgroundColor: theme.colorBorder },
+                  ]}
+                />
               </View>
             </>
           )}
@@ -183,15 +234,15 @@ const styles = StyleSheet.create({
   },
   feed: { paddingHorizontal: 20, paddingVertical: 16 },
 
-  row: { flexDirection: "row", alignItems: "center" },
+  row: { flexDirection: "row", alignItems: "flex-start" },
   rowBorder: {
     paddingBottom: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#F1F5F9",
   },
-  flex1: { flex: 1 },
+  flex1: { flex: 1, minHeight: 96, justifyContent: "space-between" },
   name: { marginBottom: 4, fontSize: 16, fontWeight: "700", color: "#111827" },
-  desc: { fontSize: 13, color: "#6B7280", marginBottom: 8 },
+  desc: { fontSize: 13, color: "#6B7280", marginBottom: 8, marginRight: 4 },
   timeRow: { flexDirection: "row", alignItems: "center" },
   timeText: { marginLeft: 4, fontSize: 13, color: "#111827" },
   cover: { width: 96, height: 96, borderRadius: 16 },

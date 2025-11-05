@@ -1,8 +1,17 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
-import { View, Text, StyleSheet, FlatList, Animated } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Animated,
+  Pressable,
+} from "react-native";
 import { Image } from "expo-image";
 import { Clock } from "lucide-react-native";
 import { api } from "../app/api";
+import { RecipeDetailCard } from "./RecipeDetailCard";
+import { useTheme } from "../styles/useTheme";
 
 type MenuItem = {
   id: string;
@@ -71,9 +80,11 @@ function SkeletonBox({
 }
 
 export function MenuItems() {
+  const theme = useTheme();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<MenuItem | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -103,17 +114,32 @@ export function MenuItems() {
   }, []);
 
   const renderItem = ({ item, index }: { item: MenuItem; index: number }) => (
-    <View
-      style={[styles.row, index !== menuItems.length - 1 && styles.rowBorder]}
+    <Pressable
+      onPress={() => setSelected(item)}
+      style={[
+        styles.row,
+        index !== menuItems.length - 1 && [
+          styles.rowBorder,
+          { borderBottomColor: theme.colorBorder },
+        ],
+      ]}
     >
       <View style={styles.flex1}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.desc} numberOfLines={2}>
+        <Text style={[styles.name, { color: theme.colorForeground }]}>
+          {item.name}
+        </Text>
+        <Text
+          style={[styles.desc, { color: theme.colorMutedForeground }]}
+          numberOfLines={3}
+          ellipsizeMode="tail"
+        >
           {item.description}
         </Text>
         <View style={styles.timeRow}>
-          <Clock size={14} color="#111827" />
-          <Text style={styles.timeText}>{item.timeCost}</Text>
+          <Clock size={14} color={theme.colorForeground} />
+          <Text style={[styles.timeText, { color: theme.colorForeground }]}>
+            {item.timeCost}
+          </Text>
         </View>
       </View>
       <View>
@@ -126,7 +152,7 @@ export function MenuItems() {
           recyclingKey={item.image}
         />
       </View>
-    </View>
+    </Pressable>
   );
 
   if (loading) {
@@ -180,13 +206,18 @@ export function MenuItems() {
   }
 
   return (
-    <FlatList
-      data={menuItems}
-      keyExtractor={(i) => String(i.id)}
-      renderItem={renderItem}
-      ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-      scrollEnabled={false}
-    />
+    <>
+      <FlatList
+        data={menuItems}
+        keyExtractor={(i) => String(i.id)}
+        renderItem={renderItem}
+        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        scrollEnabled={false}
+      />
+      {selected && (
+        <RecipeDetailCard recipe={selected} onClose={() => setSelected(null)} />
+      )}
+    </>
   );
 }
 
@@ -195,13 +226,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12 as any,
     paddingBottom: 16,
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   rowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#F1F5F9",
   },
-  flex1: { flex: 1 },
+  flex1: { flex: 1, minHeight: 96, justifyContent: "space-between" },
   name: {
     marginBottom: 4,
     fontSize: 16,
@@ -212,6 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#6B7280",
     marginBottom: 8,
+    marginRight: 4,
   },
   timeRow: { flexDirection: "row", alignItems: "center", gap: 4 as any },
   timeText: { marginLeft: 4, fontSize: 13, color: "#111827" },
