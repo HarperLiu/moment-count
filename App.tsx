@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import { LogOut } from "lucide-react-native";
 
 import { InfoCards } from "./components/InfoCards";
 import { MemoriesSection } from "./components/MemoriesSection";
@@ -43,6 +44,7 @@ export default function App() {
           require("@react-native-async-storage/async-storage").default as {
             getItem: (k: string) => Promise<string | null>;
             setItem: (k: string, v: string) => Promise<void>;
+            removeItem: (k: string) => Promise<void>;
           };
         const uuid = await AsyncStorage.getItem("user:uuid");
         if (uuid) {
@@ -113,6 +115,21 @@ export default function App() {
     }
   };
 
+  const handleClearCache = async () => {
+    try {
+      const AsyncStorage = require("@react-native-async-storage/async-storage")
+        .default as {
+        removeItem: (k: string) => Promise<void>;
+      };
+      await AsyncStorage.removeItem("user:uuid");
+      await AsyncStorage.removeItem("user:profile");
+      setCurrentPage("auth");
+    } catch (e) {
+      console.error("Failed to clear cache", e);
+      setCurrentPage("auth");
+    }
+  };
+
   if (!bootstrapped) {
     return <View style={{ flex: 1, backgroundColor: "#F8FAFC" }} />;
   }
@@ -164,6 +181,27 @@ export default function App() {
         style={[styles.phoneContainer, { backgroundColor: theme.colorCard }]}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Clear Cache Button */}
+          <View style={styles.clearCacheContainer}>
+            <TouchableOpacity
+              onPress={handleClearCache}
+              style={[
+                styles.clearCacheBtn,
+                { backgroundColor: theme.colorMuted },
+              ]}
+            >
+              <LogOut size={16} color={theme.colorForeground} />
+              <Text
+                style={[
+                  styles.clearCacheText,
+                  { color: theme.colorForeground },
+                ]}
+              >
+                清除缓存
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Hero Image */}
           <View style={styles.heroWrapper}>
             <Image
@@ -240,6 +278,24 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 24,
+  },
+  clearCacheContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+    alignItems: "flex-end",
+  },
+  clearCacheBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6 as any,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  clearCacheText: {
+    fontSize: 13,
+    fontWeight: "500",
   },
   heroWrapper: {
     height: 192,
