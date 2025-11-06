@@ -11,6 +11,7 @@ import {
 import { Image } from "expo-image";
 import { ArrowLeft, Plus } from "lucide-react-native";
 import { api } from "../app/api";
+import { MemoryDetailCard } from "./MemoryDetailCard";
 
 type MemoryPhoto = { url: string; alt: string };
 type MemoryEntry = {
@@ -75,16 +76,22 @@ function PhotoGrid({ photos }: { photos: MemoryPhoto[] }) {
   );
 }
 
-function MemoryCard({ memory }: { memory: MemoryEntry }) {
+function MemoryCard({
+  memory,
+  onPress,
+}: {
+  memory: MemoryEntry;
+  onPress: () => void;
+}) {
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={onPress}>
       <HeadlineAndDetails
         headline={memory.headline}
         details={memory.details}
         date={memory.date}
       />
       <PhotoGrid photos={memory.photos} />
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -98,6 +105,7 @@ export function MemoryListPage({
   const [memories, setMemories] = useState<MemoryEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<MemoryEntry | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -165,9 +173,15 @@ export function MemoryListPage({
             <>
               {memories.map((m) => (
                 <View key={m.id} style={{ marginBottom: 16 }}>
-                  <MemoryCard memory={m} />
+                  <MemoryCard memory={m} onPress={() => setSelected(m)} />
                 </View>
               ))}
+              {selected && (
+                <MemoryDetailCard
+                  memory={selected}
+                  onClose={() => setSelected(null)}
+                />
+              )}
               <View style={styles.endRow}>
                 <View style={styles.endLine} />
                 <Text style={styles.endText}>More is coming</Text>

@@ -1,8 +1,16 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
-import { View, Text, StyleSheet, FlatList, Animated } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Animated,
+  Pressable,
+} from "react-native";
 import { Image } from "expo-image";
 import { api } from "../app/api";
-type Memory = { id: string; image: string; date: string };
+import { MemoryDetailCard, MemoryDetail } from "./MemoryDetailCard";
+type Memory = MemoryDetail & { image: string };
 
 // Format date to yyyy-mm-dd
 function formatDate(dateString: string): string {
@@ -73,6 +81,7 @@ export function MemoriesSection() {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Memory | null>(null);
   const skeletonData = useMemo(
     () =>
       Array.from({ length: 4 }).map(
@@ -94,6 +103,9 @@ export function MemoriesSection() {
             id: String((m as any).id),
             image: (m as any).photos?.[0] || "",
             date: (m as any).date || "",
+            headline: (m as any).title || "",
+            details: (m as any).details || "",
+            photos: ((m as any).photos || []).map((p: string) => ({ url: p })),
           }))
           .filter((m) => !!m.image)
           .sort((a, b) => {
@@ -113,7 +125,7 @@ export function MemoriesSection() {
 
   const renderItem = ({ item }: { item: Memory }) => (
     <View style={styles.item}>
-      <View style={styles.card}>
+      <Pressable style={styles.card} onPress={() => setSelected(item)}>
         {loading ? (
           <SkeletonBox width="100%" height={120} style={{ borderRadius: 16 }} />
         ) : (
@@ -126,7 +138,7 @@ export function MemoriesSection() {
             recyclingKey={item.image}
           />
         )}
-      </View>
+      </Pressable>
       {loading ? (
         <SkeletonBox
           width={60}
@@ -140,14 +152,19 @@ export function MemoriesSection() {
   );
 
   return (
-    <FlatList
-      data={loading ? skeletonData : memories}
-      keyExtractor={(m) => String(m.id)}
-      renderItem={renderItem}
-      numColumns={2}
-      columnWrapperStyle={styles.row}
-      scrollEnabled={false}
-    />
+    <>
+      <FlatList
+        data={loading ? skeletonData : memories}
+        keyExtractor={(m) => String(m.id)}
+        renderItem={renderItem}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        scrollEnabled={false}
+      />
+      {selected && (
+        <MemoryDetailCard memory={selected} onClose={() => setSelected(null)} />
+      )}
+    </>
   );
 }
 

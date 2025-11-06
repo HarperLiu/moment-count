@@ -126,6 +126,26 @@ export const api = {
     )
       .then((r) => (r as any)?.data || null)
       .catch(() => null),
+
+  // Auth
+  register: (payload: {
+    name: string;
+    slogan?: string;
+    avatar?: string;
+    password: string;
+  }): Promise<ServerUser> =>
+    http<{ data: ServerUser }>("/auth/register", {
+      method: "POST",
+      body: payload,
+    }).then((r) => r.data),
+  login: (payload: {
+    username: string;
+    password: string;
+  }): Promise<ServerUser> =>
+    http<{ data: ServerUser }>("/auth/login", {
+      method: "POST",
+      body: payload,
+    }).then((r) => r.data),
 };
 
 export { BASE_URL };

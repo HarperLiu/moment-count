@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { LogOut } from "lucide-react-native";
+import { LogOut, Settings } from "lucide-react-native";
 
 import { InfoCards } from "./components/InfoCards";
 import { MemoriesSection } from "./components/MemoriesSection";
@@ -18,21 +18,29 @@ import { CookingReceiptListPage } from "./components/CookingReceiptListPage";
 import { AddMemoryPage } from "./components/AddMemoryPage";
 import { AddRecipePage } from "./components/AddRecipePage";
 import { AuthPage } from "./components/AuthPage";
+import { WelcomePage } from "./components/WelcomePage";
+import { RegisterPage } from "./components/RegisterPage";
+import { LoginPage } from "./components/LoginPage";
 import { api } from "./app/api";
 import { UserInfo } from "./components/UserInfo";
+import { SettingsPage } from "./components/SettingsPage";
 import { useTheme } from "./styles/useTheme";
 
 type PageKey =
+  | "welcome"
+  | "login"
+  | "register"
   | "auth"
   | "home"
   | "memories"
   | "cooking"
   | "add-memory"
-  | "add-recipe";
+  | "add-recipe"
+  | "settings";
 
 export default function App() {
   const theme = useTheme();
-  const [currentPage, setCurrentPage] = useState<PageKey>("auth");
+  const [currentPage, setCurrentPage] = useState<PageKey>("welcome");
   const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
@@ -47,7 +55,12 @@ export default function App() {
             removeItem: (k: string) => Promise<void>;
           };
         const uuid = await AsyncStorage.getItem("user:uuid");
-        if (uuid) {
+        const loginAtStr = await AsyncStorage.getItem("user:loginAt");
+        const now = Date.now();
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        const within7Days =
+          !!loginAtStr && now - Number(loginAtStr || 0) < sevenDaysMs;
+        if (uuid && within7Days) {
           try {
             const { api } = await import("./app/api");
             const serverUser = await api.getUserByUuid(uuid);
@@ -66,10 +79,10 @@ export default function App() {
           } catch {}
           setCurrentPage("home");
         } else {
-          setCurrentPage("auth");
+          setCurrentPage("welcome");
         }
       } catch {
-        setCurrentPage("auth");
+        setCurrentPage("welcome");
       } finally {
         setBootstrapped(true);
       }
@@ -123,19 +136,102 @@ export default function App() {
       };
       await AsyncStorage.removeItem("user:uuid");
       await AsyncStorage.removeItem("user:profile");
-      setCurrentPage("auth");
+      await AsyncStorage.removeItem("user:loginAt");
+      setCurrentPage("welcome");
     } catch (e) {
       console.error("Failed to clear cache", e);
-      setCurrentPage("auth");
+      setCurrentPage("welcome");
     }
+  };
+
+  // Auth flows
+  const handleGetStarted = () => setCurrentPage("register");
+  const handleGoLogin = () => setCurrentPage("login");
+
+  const handleRegister = async (data: {
+    name: string;
+    slogan: string;
+    username: string; // avatar
+    password: string;
+  }) => {
+    try {
+      const user = await api.register({
+        name: data.name.trim(),
+        slogan: data.slogan.trim(),
+        avatar: data.username || "",
+        password: data.password,
+      });
+      const profile = {
+        uuid: user.uuid,
+        name: user.name || "",
+        slogan: user.slogan || "",
+        avatar: user.avatar || "",
+      };
+      const AsyncStorage = (
+        await import("@react-native-async-storage/async-storage")
+      ).default;
+      await AsyncStorage.setItem("user:uuid", profile.uuid);
+      await AsyncStorage.setItem("user:profile", JSON.stringify(profile));
+      await AsyncStorage.setItem("user:loginAt", String(Date.now()));
+      setCurrentPage("home");
+    } catch {}
+  };
+
+  const handleLogin = async (data: { username: string; password: string }) => {
+    try {
+      const user = await api.login({
+        username: data.username,
+        password: data.password,
+      });
+      const profile = {
+        uuid: user.uuid,
+        name: user.name || "",
+        slogan: user.slogan || "",
+        avatar: user.avatar || "",
+      };
+      const AsyncStorage = (
+        await import("@react-native-async-storage/async-storage")
+      ).default as { setItem: (k: string, v: string) => Promise<void> };
+      await AsyncStorage.setItem("user:uuid", profile.uuid);
+      await AsyncStorage.setItem("user:profile", JSON.stringify(profile));
+      await AsyncStorage.setItem("user:loginAt", String(Date.now()));
+      setCurrentPage("home");
+    } catch {}
   };
 
   if (!bootstrapped) {
     return <View style={{ flex: 1, backgroundColor: "#F8FAFC" }} />;
   }
 
-  if (currentPage === "auth") {
-    return <AuthPage onRegistered={() => setCurrentPage("home")} />;
+  if (currentPage === "welcome") {
+    return (
+      <WelcomePage onGetStarted={handleGetStarted} onLogIn={handleGoLogin} />
+    );
+  }
+  if (currentPage === "register") {
+    return (
+      <RegisterPage
+        onRegister={handleRegister}
+        onLoginClick={() => setCurrentPage("login")}
+      />
+    );
+  }
+  if (currentPage === "login") {
+    return (
+      <LoginPage
+        onLogin={handleLogin}
+        onSignUpClick={() => setCurrentPage("register")}
+      />
+    );
+  }
+
+  if (currentPage === "settings") {
+    return (
+      <SettingsPage
+        onBack={() => setCurrentPage("home")}
+        onLogout={handleClearCache}
+      />
+    );
   }
 
   if (currentPage === "add-memory") {
@@ -181,27 +277,6 @@ export default function App() {
         style={[styles.phoneContainer, { backgroundColor: theme.colorCard }]}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Clear Cache Button */}
-          <View style={styles.clearCacheContainer}>
-            <TouchableOpacity
-              onPress={handleClearCache}
-              style={[
-                styles.clearCacheBtn,
-                { backgroundColor: theme.colorMuted },
-              ]}
-            >
-              <LogOut size={16} color={theme.colorForeground} />
-              <Text
-                style={[
-                  styles.clearCacheText,
-                  { color: theme.colorForeground },
-                ]}
-              >
-                清除缓存
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Hero Image */}
           <View style={styles.heroWrapper}>
             <Image
@@ -209,6 +284,13 @@ export default function App() {
               resizeMode="cover"
               style={styles.heroImage}
             />
+            {/* Settings Button (top-right) */}
+            <TouchableOpacity
+              onPress={() => setCurrentPage("settings")}
+              style={styles.settingsBtn}
+            >
+              <Settings size={18} color={theme.colorForeground} />
+            </TouchableOpacity>
           </View>
 
           {/* User Info */}
@@ -279,24 +361,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 24,
   },
-  clearCacheContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
-    alignItems: "flex-end",
-  },
-  clearCacheBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6 as any,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  clearCacheText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
+
   heroWrapper: {
     height: 192,
     width: "100%",
@@ -304,6 +369,17 @@ const styles = StyleSheet.create({
   heroImage: {
     width: "100%",
     height: "100%",
+  },
+  settingsBtn: {
+    position: "absolute",
+    top: 48,
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.8)",
   },
   sectionWrapper: {
     paddingHorizontal: 20,
