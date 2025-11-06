@@ -9,6 +9,7 @@ import {
   Image,
   SafeAreaView,
 } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { StatusBar } from "./StatusBar";
 import { useTheme } from "../styles/useTheme";
 
@@ -139,9 +140,14 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
               ]}
               disabled={!isFormValid || submitting}
             >
-              <Text style={styles.submitBtnText}>
-                {submitting ? "Please wait..." : "Log In"}
-              </Text>
+              <View style={styles.btnRow}>
+                {submitting && (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                )}
+                <Text style={styles.submitBtnText}>
+                  {submitting ? "Please wait..." : "Log In"}
+                </Text>
+              </View>
             </TouchableOpacity>
 
             {/* Sign Up Link */}
@@ -269,6 +275,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
+  btnRow: { flexDirection: "row", alignItems: "center", gap: 8 as any },
   signUpContainer: {
     flexDirection: "row",
     alignItems: "center",

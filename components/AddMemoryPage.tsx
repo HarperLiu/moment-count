@@ -10,6 +10,10 @@ import {
   Platform,
 } from "react-native";
 import { Image } from "expo-image";
+import { ActivityIndicator } from "react-native";
+import * as FileSystem from "expo-file-system/legacy";
+import * as ImageManipulator from "expo-image-manipulator";
+import { api } from "../app/api";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
@@ -44,6 +48,7 @@ export function AddMemoryPage({
   const [photos, setPhotos] = useState<string[]>([]);
   const [date, setDate] = useState<Date>(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handlePickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -64,10 +69,44 @@ export function AddMemoryPage({
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => {
-    if (title.trim() || details.trim() || photos.length > 0) {
-      onSave({ title, details, photos, date });
+  const handleSave = async () => {
+    if (!(title.trim() || details.trim() || photos.length > 0)) return;
+    if (saving) return;
+    const uploaded: string[] = [];
+    try {
+      setSaving(true);
+      for (const uri of photos) {
+        try {
+          // Resize & compress to reduce payload (avoid 413 on serverless)
+          const manipulated = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 1280 } }],
+            {
+              compress: 0.7,
+              format: ImageManipulator.SaveFormat.JPEG,
+              base64: true,
+            }
+          );
+          const base64 =
+            manipulated.base64 ||
+            (await FileSystem.readAsStringAsync(uri, {
+              encoding: "base64" as any,
+            }));
+          const name = uri.split("/").pop() || `photo_${Date.now()}.jpg`;
+          const { url } = await api.uploadBase64Image({
+            filename: name,
+            base64,
+            contentType: "image/jpeg",
+          });
+          uploaded.push(url);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      onSave({ title, details, photos: uploaded, date });
       onBack();
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -175,14 +214,20 @@ export function AddMemoryPage({
         <TouchableOpacity
           style={[
             styles.saveBtn,
-            !(title.trim() || details.trim() || photos.length > 0) && {
+            (!(title.trim() || details.trim() || photos.length > 0) ||
+              saving) && {
               opacity: 0.5,
             },
           ]}
           onPress={handleSave}
-          disabled={!(title.trim() || details.trim() || photos.length > 0)}
+          disabled={
+            !(title.trim() || details.trim() || photos.length > 0) || saving
+          }
         >
-          <Text style={styles.saveBtnText}>Save Memory</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            {saving && <ActivityIndicator size="small" color="#FFFFFF" />}
+            <Text style={styles.saveBtnText}>Save Memory</Text>
+          </View>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

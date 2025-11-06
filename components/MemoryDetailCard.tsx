@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -34,13 +34,15 @@ export function MemoryDetailCard({
   const [index, setIndex] = useState(
     Math.min(initialImageIndex, Math.max(0, (memory.photos?.length || 1) - 1))
   );
-  const width = Dimensions.get("window").width;
+  const windowWidth = Dimensions.get("window").width;
+  const [carouselWidth, setCarouselWidth] = useState<number>(0);
   const listRef = useRef<FlatList<MemoryPhoto>>(null);
 
   const photos = useMemo(() => memory.photos || [], [memory.photos]);
 
   const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const page = Math.round(e.nativeEvent.contentOffset.x / width);
+    const w = carouselWidth || windowWidth;
+    const page = Math.round(e.nativeEvent.contentOffset.x / w);
     if (page !== index) setIndex(page);
   };
 
@@ -67,7 +69,13 @@ export function MemoryDetailCard({
             <X size={18} color="#111827" />
           </TouchableOpacity>
 
-          <View style={styles.carouselBox}>
+          <View
+            style={styles.carouselBox}
+            onLayout={(e) => {
+              const w = e.nativeEvent.layout.width;
+              if (w && w !== carouselWidth) setCarouselWidth(w);
+            }}
+          >
             <FlatList
               ref={listRef}
               horizontal
@@ -79,12 +87,16 @@ export function MemoryDetailCard({
               }
               keyExtractor={(_, i) => String(i)}
               renderItem={({ item }) => (
-                <View style={{ width }}>
+                <View style={{ width: carouselWidth || windowWidth }}>
                   {item.url ? (
                     <Image
                       source={{ uri: item.url }}
-                      style={{ width: "100%", height: "100%" }}
-                      contentFit="cover"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#000",
+                      }}
+                      contentFit="contain"
                       transition={200}
                       cachePolicy="memory-disk"
                       recyclingKey={item.url}
@@ -92,7 +104,7 @@ export function MemoryDetailCard({
                   ) : (
                     <View
                       style={{
-                        width,
+                        width: carouselWidth || windowWidth,
                         height: "100%",
                         backgroundColor: "#E5E7EB",
                       }}
@@ -102,8 +114,8 @@ export function MemoryDetailCard({
               )}
               initialScrollIndex={index}
               getItemLayout={(_, i) => ({
-                length: width,
-                offset: width * i,
+                length: carouselWidth || windowWidth,
+                offset: (carouselWidth || windowWidth) * i,
                 index: i,
               })}
               removeClippedSubviews

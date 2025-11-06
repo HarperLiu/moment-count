@@ -9,6 +9,7 @@ import {
   Image,
   SafeAreaView,
 } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { StatusBar } from "./StatusBar";
 import { Upload } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -226,9 +227,14 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               ]}
               disabled={!isFormValid || submitting}
             >
-              <Text style={styles.submitBtnText}>
-                {submitting ? "Please wait..." : "Get Started"}
-              </Text>
+              <View style={styles.btnRow}>
+                {submitting && (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                )}
+                <Text style={styles.submitBtnText}>
+                  {submitting ? "Please wait..." : "Get Started"}
+                </Text>
+              </View>
             </TouchableOpacity>
 
             {/* Login Link */}
@@ -379,6 +385,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
+  btnRow: { flexDirection: "row", alignItems: "center", gap: 8 as any },
   loginContainer: {
     flexDirection: "row",
     alignItems: "center",

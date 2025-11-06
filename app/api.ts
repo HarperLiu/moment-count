@@ -146,6 +146,17 @@ export const api = {
       method: "POST",
       body: payload,
     }).then((r) => r.data),
+
+  // Upload base64 image and return public URL
+  uploadBase64Image: (payload: {
+    filename: string;
+    base64: string;
+    contentType?: string;
+  }): Promise<{ url: string }> =>
+    http<{ data: { url: string } }>("/upload-base64", {
+      method: "POST",
+      body: payload,
+    }).then((r) => r.data),
 };
 
 export { BASE_URL };

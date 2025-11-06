@@ -9,6 +9,10 @@ import {
   TextInput,
 } from "react-native";
 import { Image } from "expo-image";
+import { ActivityIndicator } from "react-native";
+import * as FileSystem from "expo-file-system/legacy";
+import * as ImageManipulator from "expo-image-manipulator";
+import { api } from "../app/api";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { ArrowLeft, Image as ImageIcon, Clock, X } from "lucide-react-native";
@@ -30,6 +34,7 @@ export function AddRecipePage({
   const [photos, setPhotos] = useState<string[]>([]);
   const [hours, setHours] = useState("0");
   const [minutes, setMinutes] = useState("0");
+  const [saving, setSaving] = useState(false);
 
   const handlePickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -50,18 +55,51 @@ export function AddRecipePage({
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => {
-    if (title.trim() || details.trim() || photos.length > 0) {
+  const handleSave = async () => {
+    if (!(title.trim() || details.trim() || photos.length > 0)) return;
+    if (saving) return;
+    const uploaded: string[] = [];
+    try {
+      setSaving(true);
+      for (const uri of photos) {
+        try {
+          const manipulated = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 1280 } }],
+            {
+              compress: 0.7,
+              format: ImageManipulator.SaveFormat.JPEG,
+              base64: true,
+            }
+          );
+          const base64 =
+            manipulated.base64 ||
+            (await FileSystem.readAsStringAsync(uri, {
+              encoding: "base64" as any,
+            }));
+          const name = uri.split("/").pop() || `photo_${Date.now()}.jpg`;
+          const { url } = await api.uploadBase64Image({
+            filename: name,
+            base64,
+            contentType: "image/jpeg",
+          });
+          uploaded.push(url);
+        } catch {
+          uploaded.push(uri);
+        }
+      }
       onSave({
         title,
         details,
-        photos,
+        photos: uploaded,
         timeCost: {
           hours: parseInt(hours, 10),
           minutes: parseInt(minutes, 10),
         },
       });
       onBack();
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -73,18 +111,7 @@ export function AddRecipePage({
             <ArrowLeft size={20} color="#111827" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>New Recipe</Text>
-          <TouchableOpacity
-            onPress={handleSave}
-            style={[
-              styles.savePill,
-              !(title.trim() || details.trim() || photos.length > 0) && {
-                opacity: 0.5,
-              },
-            ]}
-            disabled={!(title.trim() || details.trim() || photos.length > 0)}
-          >
-            <Text style={styles.savePillText}>Save</Text>
-          </TouchableOpacity>
+          <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.fieldBlock}>
@@ -189,6 +216,25 @@ export function AddRecipePage({
         </View>
 
         <Text style={styles.hint}>Share your favorite recipes together</Text>
+
+        <TouchableOpacity
+          onPress={handleSave}
+          style={[
+            styles.saveBtn,
+            (!(title.trim() || details.trim() || photos.length > 0) ||
+              saving) && {
+              opacity: 0.5,
+            },
+          ]}
+          disabled={
+            !(title.trim() || details.trim() || photos.length > 0) || saving
+          }
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            {saving && <ActivityIndicator size="small" color="#FFFFFF" />}
+            <Text style={styles.saveBtnText}>Save Recipe</Text>
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -211,13 +257,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
-  savePill: {
+  saveBtn: {
+    marginTop: 12,
     backgroundColor: "#F97316",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 9999,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
   },
-  savePillText: { color: "#FFFFFF", fontWeight: "700" },
+  saveBtnText: { color: "#FFFFFF", fontWeight: "700" },
 
   fieldBlock: { marginTop: 12 },
   label: { fontSize: 12, color: "#64748B", marginBottom: 6 },
