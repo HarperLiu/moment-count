@@ -41,9 +41,10 @@ export function MemoryDetailCard({
   const photos = useMemo(() => memory.photos || [], [memory.photos]);
 
   const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const w = carouselWidth || windowWidth;
-    const page = Math.round(e.nativeEvent.contentOffset.x / w);
-    if (page !== index) setIndex(page);
+    if (carouselWidth > 0) {
+      const page = Math.round(e.nativeEvent.contentOffset.x / carouselWidth);
+      if (page !== index) setIndex(page);
+    }
   };
 
   const formattedDate = useMemo(() => {
@@ -76,51 +77,60 @@ export function MemoryDetailCard({
               if (w && w !== carouselWidth) setCarouselWidth(w);
             }}
           >
-            <FlatList
-              ref={listRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={onScrollEnd}
-              data={
-                photos.length > 0 ? photos : ([{ url: "" }] as MemoryPhoto[])
-              }
-              keyExtractor={(_, i) => String(i)}
-              renderItem={({ item }) => (
-                <View style={{ width: carouselWidth || windowWidth }}>
-                  {item.url ? (
-                    <Image
-                      source={{ uri: item.url }}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "#000",
-                      }}
-                      contentFit="contain"
-                      transition={200}
-                      cachePolicy="memory-disk"
-                      recyclingKey={item.url}
-                    />
-                  ) : (
-                    <View
-                      style={{
-                        width: carouselWidth || windowWidth,
-                        height: "100%",
-                        backgroundColor: "#E5E7EB",
-                      }}
-                    />
-                  )}
-                </View>
-              )}
-              initialScrollIndex={index}
-              getItemLayout={(_, i) => ({
-                length: carouselWidth || windowWidth,
-                offset: (carouselWidth || windowWidth) * i,
-                index: i,
-              })}
-              removeClippedSubviews
-              decelerationRate="fast"
-            />
+            {carouselWidth > 0 && (
+              <FlatList
+                ref={listRef}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={onScrollEnd}
+                data={
+                  photos.length > 0 ? photos : ([{ url: "" }] as MemoryPhoto[])
+                }
+                keyExtractor={(_, i) => String(i)}
+                renderItem={({ item }) => (
+                  <View
+                    style={{
+                      width: carouselWidth,
+                      height: "100%",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {item.url ? (
+                      <Image
+                        source={{ uri: item.url }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                        }}
+                        contentFit="cover"
+                        transition={200}
+                        cachePolicy="memory-disk"
+                        recyclingKey={item.url}
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          backgroundColor: "#E5E7EB",
+                        }}
+                      />
+                    )}
+                  </View>
+                )}
+                initialScrollIndex={index}
+                getItemLayout={(_, i) => ({
+                  length: carouselWidth,
+                  offset: carouselWidth * i,
+                  index: i,
+                })}
+                snapToInterval={carouselWidth}
+                snapToAlignment="center"
+                decelerationRate="fast"
+              />
+            )}
 
             {photos.length > 1 && (
               <View style={styles.indicators}>
@@ -183,7 +193,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  carouselBox: { width: "100%", height: 288, backgroundColor: "#E5E7EB" },
+  carouselBox: {
+    width: "100%",
+    aspectRatio: 1,
+    backgroundColor: "#E5E7EB",
+  },
   indicators: {
     position: "absolute",
     left: 0,

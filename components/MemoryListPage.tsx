@@ -57,11 +57,22 @@ function HeadlineAndDetails({
   );
 }
 
-function PhotoGrid({ photos }: { photos: MemoryPhoto[] }) {
+function PhotoGrid({
+  photos,
+  onPhotoPress,
+}: {
+  photos: MemoryPhoto[];
+  onPhotoPress?: (index: number) => void;
+}) {
   return (
     <View style={styles.grid2}>
       {photos.map((p, i) => (
-        <View key={i} style={styles.gridItem}>
+        <TouchableOpacity
+          key={i}
+          style={styles.gridItem}
+          onPress={() => onPhotoPress?.(i)}
+          activeOpacity={0.8}
+        >
           <Image
             source={{ uri: p.url }}
             style={styles.gridPhoto}
@@ -70,7 +81,7 @@ function PhotoGrid({ photos }: { photos: MemoryPhoto[] }) {
             cachePolicy="memory-disk"
             recyclingKey={p.url}
           />
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );
@@ -79,19 +90,23 @@ function PhotoGrid({ photos }: { photos: MemoryPhoto[] }) {
 function MemoryCard({
   memory,
   onPress,
+  onPhotoPress,
 }: {
   memory: MemoryEntry;
   onPress: () => void;
+  onPhotoPress?: (index: number) => void;
 }) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      <HeadlineAndDetails
-        headline={memory.headline}
-        details={memory.details}
-        date={memory.date}
-      />
-      <PhotoGrid photos={memory.photos} />
-    </TouchableOpacity>
+    <View style={styles.card}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+        <HeadlineAndDetails
+          headline={memory.headline}
+          details={memory.details}
+          date={memory.date}
+        />
+      </TouchableOpacity>
+      <PhotoGrid photos={memory.photos} onPhotoPress={onPhotoPress} />
+    </View>
   );
 }
 
@@ -106,6 +121,7 @@ export function MemoryListPage({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<MemoryEntry | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
 
   useEffect(() => {
     let mounted = true;
@@ -173,12 +189,23 @@ export function MemoryListPage({
             <>
               {memories.map((m) => (
                 <View key={m.id} style={{ marginBottom: 16 }}>
-                  <MemoryCard memory={m} onPress={() => setSelected(m)} />
+                  <MemoryCard
+                    memory={m}
+                    onPress={() => {
+                      setSelected(m);
+                      setSelectedImageIndex(0);
+                    }}
+                    onPhotoPress={(index) => {
+                      setSelected(m);
+                      setSelectedImageIndex(index);
+                    }}
+                  />
                 </View>
               ))}
               {selected && (
                 <MemoryDetailCard
                   memory={selected}
+                  initialImageIndex={selectedImageIndex}
                   onClose={() => setSelected(null)}
                 />
               )}
