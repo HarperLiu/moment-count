@@ -7,7 +7,6 @@ import {
   ScrollView,
   TextInput,
   Image,
-  SafeAreaView,
 } from "react-native";
 import { ActivityIndicator } from "react-native";
 import { StatusBar } from "./StatusBar";
@@ -62,7 +61,7 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
   const isFormValid = name.trim() && password.trim();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: "#F1F5F9" }]}>
+    <View style={[styles.container, { backgroundColor: "#F1F5F9" }]}>
       <StatusBar />
       {/* iPhone Container */}
       <View
@@ -256,29 +255,17 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
           </View>
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
   },
   phoneContainer: {
+    flex: 1,
     position: "relative",
-    width: "100%",
-    maxWidth: 400,
-    aspectRatio: 9 / 19.5,
-    borderRadius: 48,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
   },
   notch: {
     position: "absolute",

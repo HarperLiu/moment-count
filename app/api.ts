@@ -66,6 +66,7 @@ export type ServerUser = {
   name?: string;
   slogan?: string;
   avatar?: string;
+  linked_user_uuid?: string | null;
 };
 
 export const api = {
@@ -126,6 +127,30 @@ export const api = {
     )
       .then((r) => (r as any)?.data || null)
       .catch(() => null),
+
+  linkUser: (payload: {
+    userUuid: string;
+    partnerUuid?: string;
+    partnerName?: string;
+  }): Promise<{ userUuid: string; linkedUserUuid: string }> =>
+    http<{ data: { userUuid: string; linkedUserUuid: string } }>(
+      "/users/link",
+      {
+        method: "POST",
+        body: payload,
+      }
+    ).then((r) => r.data),
+
+  unlinkUser: (payload: {
+    userUuid: string;
+  }): Promise<{ userUuid: string; unlinkedFrom: string | null }> =>
+    http<{ data: { userUuid: string; unlinkedFrom: string | null } }>(
+      "/users/unlink",
+      {
+        method: "POST",
+        body: payload,
+      }
+    ).then((r) => r.data),
 
   // Auth
   register: (payload: {

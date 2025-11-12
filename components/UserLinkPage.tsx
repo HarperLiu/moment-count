@@ -1,0 +1,484 @@
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  SafeAreaView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { ArrowLeft, Link, X } from "lucide-react-native";
+import { Image } from "expo-image";
+import { api } from "../app/api";
+
+interface UserLinkPageProps {
+  onBack: () => void;
+  currentLinkedUser: string | null;
+  onUpdateLink: (username: string | null) => void;
+}
+
+export function UserLinkPage({
+  onBack,
+  currentLinkedUser,
+  onUpdateLink,
+}: UserLinkPageProps) {
+  const [linkUsername, setLinkUsername] = useState(currentLinkedUser || "");
+  const [name, setName] = useState<string>("");
+  const [slogan, setSlogan] = useState<string>("");
+  const [avatar, setAvatar] = useState<string>("");
+  const [userUuid, setUserUuid] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const AsyncStorage =
+          require("@react-native-async-storage/async-storage").default as {
+            getItem: (k: string) => Promise<string | null>;
+          };
+        const raw = await AsyncStorage.getItem("user:profile");
+        const uuid = await AsyncStorage.getItem("user:uuid");
+        if (raw) {
+          const p = JSON.parse(raw);
+          setName(p?.name || "");
+          setSlogan(p?.slogan || "");
+          setAvatar(p?.avatar || "");
+        }
+        if (uuid) {
+          setUserUuid(uuid);
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const handleSave = async () => {
+    const trimmedUsername = linkUsername.trim();
+    if (!trimmedUsername) {
+      Alert.alert("错误", "请输入伴侣的用户名");
+      return;
+    }
+
+    if (!userUuid) {
+      Alert.alert("错误", "用户信息不完整，请重新登录");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await api.linkUser({
+        userUuid,
+        partnerName: trimmedUsername,
+      });
+
+      // 更新本地状态
+      onUpdateLink(trimmedUsername);
+      Alert.alert("成功", "已成功关联伴侣", [
+        {
+          text: "确定",
+          onPress: () => onBack(),
+        },
+      ]);
+    } catch (error: any) {
+      console.error("Link failed:", error);
+      let errorMessage = "关联失败，请重试";
+
+      if (error.message.includes("404")) {
+        errorMessage = "未找到该用户，请检查用户名是否正确";
+      } else if (error.message.includes("409")) {
+        errorMessage = "该用户已与其他人关联";
+      } else if (error.message.includes("400")) {
+        errorMessage = "不能与自己关联";
+      }
+
+      Alert.alert("关联失败", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnlink = async () => {
+    if (!userUuid) {
+      Alert.alert("错误", "用户信息不完整，请重新登录");
+      return;
+    }
+
+    Alert.alert("确认解除关联", "确定要解除与伴侣的关联吗？", [
+      {
+        text: "取消",
+        style: "cancel",
+      },
+      {
+        text: "确定",
+        style: "destructive",
+        onPress: async () => {
+          setIsLoading(true);
+          try {
+            await api.unlinkUser({ userUuid });
+
+            // 更新本地状态
+            onUpdateLink(null);
+            setLinkUsername("");
+            Alert.alert("成功", "已解除关联", [
+              {
+                text: "确定",
+                onPress: () => onBack(),
+              },
+            ]);
+          } catch (error: any) {
+            console.error("Unlink failed:", error);
+            Alert.alert("解除失败", "解除关联失败，请重试");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+      },
+    ]);
+  };
+
+  const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
+
+  return (
+    <SafeAreaView style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Sticky Header */}
+        <View style={styles.stickyHeader}>
+          <View style={styles.stickyRow}>
+            <View style={styles.leftGroup}>
+              <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
+                <ArrowLeft size={20} color="#111827" />
+              </TouchableOpacity>
+              <Text style={styles.pageTitle}>User Link</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Profile Section */}
+        <View style={styles.profileSection}>
+          <View style={styles.profileRow}>
+            <Image
+              source={avatarSource}
+              style={styles.avatar}
+              contentFit="cover"
+              transition={200}
+              cachePolicy="memory-disk"
+            />
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>{name || "User"}</Text>
+              {!!slogan && <Text style={styles.profileSlogan}>{slogan}</Text>}
+            </View>
+          </View>
+        </View>
+
+        {/* Link Section */}
+        <View style={styles.linkSection}>
+          <View style={styles.linkCard}>
+            <View style={styles.linkCardHeader}>
+              <Link size={20} color="#F97316" />
+              <Text style={styles.linkCardTitle}>Link with Someone</Text>
+            </View>
+
+            <Text style={styles.linkDescription}>
+              Connect with your partner to share memories and moments together.
+            </Text>
+
+            {currentLinkedUser ? (
+              <View>
+                <View style={styles.linkedBox}>
+                  <Text style={styles.linkedLabel}>Currently linked with</Text>
+                  <View style={styles.partnerRow}>
+                    <Image
+                      source={avatarSource}
+                      style={styles.partnerAvatar}
+                      contentFit="cover"
+                      transition={200}
+                      cachePolicy="memory-disk"
+                    />
+                    <View style={styles.partnerInfo}>
+                      <Text style={styles.partnerName}>
+                        {currentLinkedUser}
+                      </Text>
+                      <Text style={styles.partnerSubtitle}>
+                        Sharing moments together
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleUnlink}
+                  style={styles.unlinkButton}
+                  activeOpacity={0.8}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                      <Text style={styles.unlinkButtonText}>
+                        Please wait...
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <X size={16} color="#FFFFFF" />
+                      <Text style={styles.unlinkButtonText}>Unlink</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Partner's Username</Text>
+                  <TextInput
+                    value={linkUsername}
+                    onChangeText={setLinkUsername}
+                    placeholder="Enter username"
+                    style={styles.input}
+                    placeholderTextColor="#94A3B8"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleSave}
+                  disabled={!linkUsername.trim() || isLoading}
+                  style={[
+                    styles.linkButton,
+                    (!linkUsername.trim() || isLoading) &&
+                      styles.linkButtonDisabled,
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  {isLoading ? (
+                    <>
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                      <Text style={styles.linkButtonText}>Please wait...</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.linkButtonText}>Link Now</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.footerNote}>
+            <Text style={styles.footerText}>
+              {currentLinkedUser
+                ? "You can unlink anytime to change your partner connection."
+                : "Once linked, you'll be able to share memories and moments with your partner."}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
+  },
+  content: {
+    paddingBottom: 20,
+  },
+  stickyHeader: {
+    backgroundColor: "#F8FAFC",
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#E2E8F0",
+  },
+  stickyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  leftGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pageTitle: {
+    marginLeft: 12,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  profileSection: {
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  profileSlogan: {
+    fontSize: 12,
+    color: "#64748B",
+  },
+  linkSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  linkCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  linkCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  linkCardTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+    marginLeft: 8,
+  },
+  linkDescription: {
+    fontSize: 12,
+    color: "#64748B",
+    marginBottom: 16,
+  },
+  linkedBox: {
+    backgroundColor: "#FFF7ED",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#FED7AA",
+  },
+  linkedLabel: {
+    fontSize: 12,
+    color: "#64748B",
+    marginBottom: 12,
+  },
+  partnerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  partnerAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
+  partnerInfo: {
+    flex: 1,
+  },
+  partnerName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 2,
+  },
+  partnerSubtitle: {
+    fontSize: 12,
+    color: "#64748B",
+  },
+  unlinkButton: {
+    width: "100%",
+    paddingVertical: 12,
+    backgroundColor: "#EF4444",
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  unlinkButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  inputGroup: {
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 12,
+    color: "#64748B",
+    marginBottom: 8,
+  },
+  input: {
+    width: "100%",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 12,
+    fontSize: 14,
+    color: "#111827",
+  },
+  linkButton: {
+    width: "100%",
+    paddingVertical: 12,
+    backgroundColor: "#F97316",
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  linkButtonDisabled: {
+    backgroundColor: "#CBD5E1",
+  },
+  linkButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  footerNote: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+  },
+  footerText: {
+    fontSize: 12,
+    color: "#64748B",
+    textAlign: "center",
+  },
+});

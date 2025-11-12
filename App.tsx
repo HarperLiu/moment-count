@@ -24,6 +24,8 @@ import { LoginPage } from "./components/LoginPage";
 import { api } from "./app/api";
 import { UserInfo } from "./components/UserInfo";
 import { SettingsPage } from "./components/SettingsPage";
+import { UserLinkPage } from "./components/UserLinkPage";
+import { EditProfilePage } from "./components/EditProfilePage";
 import { useTheme } from "./styles/useTheme";
 
 type PageKey =
@@ -36,12 +38,15 @@ type PageKey =
   | "cooking"
   | "add-memory"
   | "add-recipe"
-  | "settings";
+  | "settings"
+  | "user-link"
+  | "edit-profile";
 
 export default function App() {
   const theme = useTheme();
   const [currentPage, setCurrentPage] = useState<PageKey>("welcome");
   const [bootstrapped, setBootstrapped] = useState(false);
+  const [linkedUser, setLinkedUser] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -56,6 +61,7 @@ export default function App() {
           };
         const uuid = await AsyncStorage.getItem("user:uuid");
         const loginAtStr = await AsyncStorage.getItem("user:loginAt");
+        const linkedUserStr = await AsyncStorage.getItem("user:linkedUser");
         const now = Date.now();
         const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
         const within7Days =
@@ -77,6 +83,7 @@ export default function App() {
               );
             }
           } catch {}
+          setLinkedUser(linkedUserStr);
           setCurrentPage("home");
         } else {
           setCurrentPage("welcome");
@@ -137,10 +144,31 @@ export default function App() {
       await AsyncStorage.removeItem("user:uuid");
       await AsyncStorage.removeItem("user:profile");
       await AsyncStorage.removeItem("user:loginAt");
+      await AsyncStorage.removeItem("user:linkedUser");
+      setLinkedUser(null);
       setCurrentPage("welcome");
     } catch (e) {
       console.error("Failed to clear cache", e);
       setCurrentPage("welcome");
+    }
+  };
+
+  const handleUpdateLink = async (username: string | null) => {
+    try {
+      const AsyncStorage = require("@react-native-async-storage/async-storage")
+        .default as {
+        setItem: (k: string, v: string) => Promise<void>;
+        removeItem: (k: string) => Promise<void>;
+      };
+      if (username) {
+        await AsyncStorage.setItem("user:linkedUser", username);
+        setLinkedUser(username);
+      } else {
+        await AsyncStorage.removeItem("user:linkedUser");
+        setLinkedUser(null);
+      }
+    } catch (e) {
+      console.error("Failed to update link", e);
     }
   };
 
@@ -230,6 +258,29 @@ export default function App() {
       <SettingsPage
         onBack={() => setCurrentPage("home")}
         onLogout={handleClearCache}
+        onNavigateToUserLink={() => setCurrentPage("user-link")}
+        onNavigateToEditProfile={() => setCurrentPage("edit-profile")}
+      />
+    );
+  }
+
+  if (currentPage === "edit-profile") {
+    return (
+      <EditProfilePage
+        onBack={() => setCurrentPage("settings")}
+        onSave={(data) => {
+          console.log("Profile updated:", data);
+        }}
+      />
+    );
+  }
+
+  if (currentPage === "user-link") {
+    return (
+      <UserLinkPage
+        onBack={() => setCurrentPage("home")}
+        currentLinkedUser={linkedUser}
+        onUpdateLink={handleUpdateLink}
       />
     );
   }
@@ -294,7 +345,10 @@ export default function App() {
           </View>
 
           {/* User Info */}
-          <UserInfo />
+          <UserInfo
+            linkedUser={linkedUser}
+            onLinkClick={() => setCurrentPage("user-link")}
+          />
 
           {/* Info Cards */}
           <InfoCards />

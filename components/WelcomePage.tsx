@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { StatusBar } from "./StatusBar";
 import { useTheme } from "../styles/useTheme";
 
@@ -19,7 +12,7 @@ export function WelcomePage({ onGetStarted, onLogIn }: WelcomePageProps) {
   const theme = useTheme();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: "#F1F5F9" }]}>
+    <View style={[styles.container, { backgroundColor: "#F1F5F9" }]}>
       <StatusBar />
       {/* iPhone Container */}
       <View
@@ -70,29 +63,17 @@ export function WelcomePage({ onGetStarted, onLogIn }: WelcomePageProps) {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
   },
   phoneContainer: {
+    flex: 1,
     position: "relative",
-    width: "100%",
-    maxWidth: 400,
-    aspectRatio: 9 / 19.5,
-    borderRadius: 48,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
   },
   notch: {
     position: "absolute",
