@@ -6,11 +6,18 @@ import {
   FlatList,
   Animated,
   Pressable,
+  TouchableOpacity,
 } from "react-native";
 import { Image } from "expo-image";
+import { Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { MemoryDetailCard, MemoryDetail } from "./MemoryDetailCard";
 type Memory = MemoryDetail & { image: string };
+
+interface MemoriesSectionProps {
+  onAddMemory?: () => void;
+  onDataLoad?: (hasData: boolean) => void;
+}
 
 // Format date to yyyy-mm-dd
 function formatDate(dateString: string): string {
@@ -77,7 +84,10 @@ function SkeletonBox({
   );
 }
 
-export function MemoriesSection() {
+export function MemoriesSection({
+  onAddMemory,
+  onDataLoad,
+}: MemoriesSectionProps) {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,8 +132,12 @@ export function MemoriesSection() {
           })
           .slice(0, 4);
         setMemories(mapped);
+        onDataLoad?.(mapped.length > 0);
       } catch (e: any) {
-        if (mounted) setError(String(e?.message || e));
+        if (mounted) {
+          setError(String(e?.message || e));
+          onDataLoad?.(false);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -131,7 +145,7 @@ export function MemoriesSection() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [onDataLoad]);
 
   const renderItem = ({ item }: { item: Memory }) => (
     <View style={styles.item}>
@@ -161,6 +175,32 @@ export function MemoriesSection() {
     </View>
   );
 
+  // Show empty state when not loading and no memories
+  if (!loading && memories.length === 0) {
+    return (
+      <>
+        <View style={styles.row}>
+          <View style={styles.item}>
+            <TouchableOpacity
+              style={styles.emptyCard}
+              onPress={onAddMemory}
+              activeOpacity={0.7}
+            >
+              <View style={styles.emptyContent}>
+                <Plus size={32} color="#94A3B8" />
+                <Text style={styles.emptyTitle}>Add your memory</Text>
+                <Text style={styles.emptyDescription}>
+                  Capture special moments
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.item} />
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
       <FlatList
@@ -179,10 +219,39 @@ export function MemoriesSection() {
 }
 
 const styles = StyleSheet.create({
+  emptyCard: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 16,
+    aspectRatio: 4 / 3,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderStyle: "dashed",
+    padding: 8,
+  },
+  emptyContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#475569",
+    textAlign: "center",
+  },
+  emptyDescription: {
+    fontSize: 12,
+    color: "#94A3B8",
+    textAlign: "center",
+  },
   row: {
     justifyContent: "space-between",
     marginBottom: 12,
     paddingHorizontal: 0,
+    flexDirection: "row",
   },
   item: {
     width: "48%",

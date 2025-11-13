@@ -6,9 +6,10 @@ import {
   FlatList,
   Animated,
   Pressable,
+  TouchableOpacity,
 } from "react-native";
 import { Image } from "expo-image";
-import { Clock } from "lucide-react-native";
+import { Clock, Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { RecipeDetailCard } from "./RecipeDetailCard";
 import { useTheme } from "../styles/useTheme";
@@ -20,6 +21,11 @@ type MenuItem = {
   timeCost: string;
   image: string;
 };
+
+interface MenuItemsProps {
+  onAddRecipe?: () => void;
+  onDataLoad?: (hasData: boolean) => void;
+}
 
 // Format time cost: if hours is 0, only show minutes
 function formatTimeCost(hours: number, minutes: number): string {
@@ -79,7 +85,7 @@ function SkeletonBox({
   );
 }
 
-export function MenuItems() {
+export function MenuItems({ onAddRecipe, onDataLoad }: MenuItemsProps) {
   const theme = useTheme();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -112,8 +118,12 @@ export function MenuItems() {
           image: (r as any).photos?.[0] || "",
         }));
         setMenuItems(mapped);
+        onDataLoad?.(mapped.length > 0);
       } catch (e: any) {
-        if (mounted) setError(String(e?.message || e));
+        if (mounted) {
+          setError(String(e?.message || e));
+          onDataLoad?.(false);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -121,7 +131,7 @@ export function MenuItems() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [onDataLoad]);
 
   const renderItem = ({ item, index }: { item: MenuItem; index: number }) => (
     <Pressable
@@ -215,6 +225,29 @@ export function MenuItems() {
     );
   }
 
+  // Show empty state when not loading and no recipes
+  if (!loading && menuItems.length === 0) {
+    return (
+      <>
+        <TouchableOpacity
+          style={styles.emptyRow}
+          onPress={onAddRecipe}
+          activeOpacity={0.7}
+        >
+          <View style={styles.emptyTextContainer}>
+            <Text style={styles.emptyTitle}>Add your cooking receipt</Text>
+            <Text style={styles.emptyDescription}>
+              Start building your recipe collection
+            </Text>
+          </View>
+          <View style={styles.emptyImagePlaceholder}>
+            <Plus size={24} color="#94A3B8" />
+          </View>
+        </TouchableOpacity>
+      </>
+    );
+  }
+
   return (
     <>
       <FlatList
@@ -232,6 +265,39 @@ export function MenuItems() {
 }
 
 const styles = StyleSheet.create({
+  emptyRow: {
+    flexDirection: "row",
+    backgroundColor: "#F1F5F9",
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    gap: 12 as any,
+    borderWidth: 2,
+    borderColor: "#E2E8F0",
+    borderStyle: "dashed",
+  },
+  emptyTextContainer: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#475569",
+    marginBottom: 4,
+  },
+  emptyDescription: {
+    fontSize: 13,
+    color: "#94A3B8",
+  },
+  emptyImagePlaceholder: {
+    width: 96,
+    height: 96,
+    borderRadius: 16,
+    backgroundColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   row: {
     flexDirection: "row",
     gap: 12 as any,

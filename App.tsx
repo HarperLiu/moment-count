@@ -49,6 +49,9 @@ export default function App() {
   const [linkedUser, setLinkedUser] = useState<string | null>(null);
   const [relationshipStartDate, setRelationshipStartDate] =
     useState<Date | null>(null);
+  const [hasMemories, setHasMemories] = useState(false);
+  const [hasRecipes, setHasRecipes] = useState(false);
+  const [returnToPage, setReturnToPage] = useState<PageKey>("home");
 
   useEffect(() => {
     (async () => {
@@ -142,7 +145,7 @@ export default function App() {
         userId,
       });
     } finally {
-      setCurrentPage("memories");
+      setCurrentPage(returnToPage);
     }
   };
 
@@ -168,7 +171,7 @@ export default function App() {
         userId,
       });
     } finally {
-      setCurrentPage("cooking");
+      setCurrentPage(returnToPage);
     }
   };
 
@@ -394,7 +397,7 @@ export default function App() {
   if (currentPage === "add-memory") {
     return (
       <AddMemoryPage
-        onBack={() => setCurrentPage("memories")}
+        onBack={() => setCurrentPage(returnToPage)}
         onSave={handleSaveMemory}
       />
     );
@@ -403,7 +406,7 @@ export default function App() {
   if (currentPage === "add-recipe") {
     return (
       <AddRecipePage
-        onBack={() => setCurrentPage("cooking")}
+        onBack={() => setCurrentPage(returnToPage)}
         onSave={handleSaveRecipe}
       />
     );
@@ -413,7 +416,10 @@ export default function App() {
     return (
       <MemoryListPage
         onBack={() => setCurrentPage("home")}
-        onAddMemory={() => setCurrentPage("add-memory")}
+        onAddMemory={() => {
+          setReturnToPage("memories");
+          setCurrentPage("add-memory");
+        }}
       />
     );
   }
@@ -422,7 +428,10 @@ export default function App() {
     return (
       <CookingReceiptListPage
         onBack={() => setCurrentPage("home")}
-        onAddRecipe={() => setCurrentPage("add-recipe")}
+        onAddRecipe={() => {
+          setReturnToPage("cooking");
+          setCurrentPage("add-recipe");
+        }}
       />
     );
   }
@@ -463,22 +472,38 @@ export default function App() {
           <View style={styles.sectionWrapper}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Memory</Text>
-              <TouchableOpacity onPress={() => setCurrentPage("memories")}>
-                <Text style={styles.linkText}>See more</Text>
-              </TouchableOpacity>
+              {hasMemories && (
+                <TouchableOpacity onPress={() => setCurrentPage("memories")}>
+                  <Text style={styles.linkText}>See more</Text>
+                </TouchableOpacity>
+              )}
             </View>
-            <MemoriesSection />
+            <MemoriesSection
+              onAddMemory={() => {
+                setReturnToPage("home");
+                setCurrentPage("add-memory");
+              }}
+              onDataLoad={setHasMemories}
+            />
           </View>
 
           {/* Cooking Receipt Section */}
           <View style={styles.sectionWrapperBottom}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Cooking Receipt</Text>
-              <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
-                <Text style={styles.linkText}>See more</Text>
-              </TouchableOpacity>
+              {hasRecipes && (
+                <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
+                  <Text style={styles.linkText}>See more</Text>
+                </TouchableOpacity>
+              )}
             </View>
-            <MenuItems />
+            <MenuItems
+              onAddRecipe={() => {
+                setReturnToPage("home");
+                setCurrentPage("add-recipe");
+              }}
+              onDataLoad={setHasRecipes}
+            />
           </View>
         </ScrollView>
       </View>

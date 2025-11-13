@@ -40,7 +40,7 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
   }, [relationshipStartDate]);
 
   const formatStartDate = (date: Date | null): string => {
-    if (!date) return "--";
+    if (!date) return "Since the start";
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
@@ -123,7 +123,11 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
                 </Text>
               </View>
             </View>
-            <Text style={styles.dateText}>
+            <Text
+              style={styles.dateText}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {formatStartDate(relationshipStartDate)}
             </Text>
           </View>
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#94A3B8",
     marginTop: 4,
-    textAlign: "center",
+    textAlign: "left",
   },
   weatherDescription: {
     fontSize: 11,
