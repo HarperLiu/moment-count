@@ -47,7 +47,8 @@ export function InfoCards() {
         const loc = await Location.getCurrentPositionAsync({});
         const lat = loc.coords.latitude;
         const lon = loc.coords.longitude;
-        // Read cached uuid from AsyncStorage; fallback to 'anonymous'
+
+        // Read cached uuid and linked user from AsyncStorage
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const AsyncStorage =
           require("@react-native-async-storage/async-storage").default as {
@@ -55,7 +56,9 @@ export function InfoCards() {
           };
         const cachedUuid =
           (await AsyncStorage.getItem("user:uuid")) || "anonymous";
+        const linkedUser = await AsyncStorage.getItem("user:linkedUser");
         const userId = cachedUuid;
+
         // Open-Meteo current weather API (no API key required)
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m`;
         const resp = await fetch(url);
@@ -65,30 +68,44 @@ export function InfoCards() {
 
         // Upload my location
         await api.postMyLocation({ lat, lon, userId }).catch(() => {});
-        // Fetch other location from server
-        const other = await api.getOtherLocation(userId).catch(() => ({
-          lat: undefined as unknown as number,
-          lon: undefined as unknown as number,
-        }));
-        if (
-          mounted &&
-          typeof other?.lat === "number" &&
-          typeof other?.lon === "number"
-        ) {
-          // Haversine distance in km
-          const toRad = (deg: number) => (deg * Math.PI) / 180;
-          const R = 6371; // km
-          const dLat = toRad(other.lat - lat);
-          const dLon = toRad(other.lon - lon);
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRad(lat)) *
-              Math.cos(toRad(other.lat)) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const d = R * c;
-          setDistanceKm(d);
+
+        // Only fetch distance if user has a linked user
+        if (linkedUser && linkedUser.trim()) {
+          // Fetch linked user's location from server
+          const other = await api.getOtherLocation(userId).catch(() => null);
+
+          // Validate that we got valid coordinates
+          const isValidLocation =
+            other &&
+            typeof other.lat === "number" &&
+            typeof other.lon === "number" &&
+            isFinite(other.lat) &&
+            isFinite(other.lon) &&
+            other.lat !== 0 &&
+            other.lon !== 0;
+
+          if (mounted && isValidLocation) {
+            // Haversine distance in km
+            const toRad = (deg: number) => (deg * Math.PI) / 180;
+            const R = 6371; // km
+            const dLat = toRad(other.lat - lat);
+            const dLon = toRad(other.lon - lon);
+            const a =
+              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRad(lat)) *
+                Math.cos(toRad(other.lat)) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const d = R * c;
+            setDistanceKm(d);
+          } else {
+            // Linked user exists but location not available
+            setDistanceKm(null);
+          }
+        } else {
+          // No linked user, show --
+          setDistanceKm(null);
         }
       } catch (e: any) {
         if (mounted) setWeatherError(String(e?.message || e));
