@@ -8,6 +8,7 @@ import {
   ScrollView,
   TextInput,
   Platform,
+  Modal,
 } from "react-native";
 import { Image } from "expo-image";
 import { ActivityIndicator } from "react-native";
@@ -67,6 +68,28 @@ export function AddMemoryPage({
 
   const handleRemovePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowPicker(false);
+      if (event.type === "set" && selectedDate) {
+        setDate(selectedDate);
+      }
+    } else {
+      // iOS: 只更新临时日期，不关闭选择器
+      if (selectedDate) {
+        setDate(selectedDate);
+      }
+    }
+  };
+
+  const handleConfirmDate = () => {
+    setShowPicker(false);
+  };
+
+  const handleCancelDate = () => {
+    setShowPicker(false);
   };
 
   const handleSave = async () => {
@@ -141,15 +164,49 @@ export function AddMemoryPage({
             <Text style={styles.inputText}>{formatDate(date)}</Text>
             <CalendarIcon size={16} color="#94A3B8" />
           </TouchableOpacity>
-          {showPicker && (
+
+          {Platform.OS === "ios" && (
+            <Modal
+              visible={showPicker}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={handleCancelDate}
+            >
+              <View style={styles.datePickerModal}>
+                <TouchableOpacity
+                  style={styles.datePickerBackdrop}
+                  activeOpacity={1}
+                  onPress={handleCancelDate}
+                />
+                <View style={styles.datePickerContainer}>
+                  <View style={styles.datePickerHeader}>
+                    <TouchableOpacity onPress={handleCancelDate}>
+                      <Text style={styles.datePickerCancelText}>取消</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.datePickerTitle}>选择日期</Text>
+                    <TouchableOpacity onPress={handleConfirmDate}>
+                      <Text style={styles.datePickerConfirmText}>确认</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleDateChange}
+                    maximumDate={new Date()}
+                  />
+                </View>
+              </View>
+            </Modal>
+          )}
+
+          {showPicker && Platform.OS === "android" && (
             <DateTimePicker
               value={date}
               mode="date"
-              display={Platform.OS === "ios" ? "inline" : "default"}
-              onChange={(_, d) => {
-                setShowPicker(Platform.OS === "ios");
-                if (d) setDate(d);
-              }}
+              display="default"
+              onChange={handleDateChange}
+              maximumDate={new Date()}
             />
           )}
         </View>
@@ -316,4 +373,48 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saveBtnText: { color: "#FFFFFF", fontWeight: "700" },
+  datePickerModal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  datePickerBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  datePickerContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingBottom: 20,
+    width: "100%",
+    maxWidth: 400,
+  },
+  datePickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+  },
+  datePickerTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    color: "#64748B",
+  },
+  datePickerConfirmText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#F97316",
+  },
 });

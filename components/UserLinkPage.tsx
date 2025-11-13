@@ -9,23 +9,37 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  Platform,
+  Modal,
 } from "react-native";
-import { ArrowLeft, Link, X } from "lucide-react-native";
+import { ArrowLeft, Link, X, CalendarHeart } from "lucide-react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { api } from "../app/api";
 
 interface UserLinkPageProps {
   onBack: () => void;
   currentLinkedUser: string | null;
-  onUpdateLink: (username: string | null) => void;
+  relationshipStartDate: Date | null;
+  onUpdateLink: (
+    username: string | null,
+    startDate?: Date | null,
+    linkKey?: string | null
+  ) => void;
 }
 
 export function UserLinkPage({
   onBack,
   currentLinkedUser,
+  relationshipStartDate,
   onUpdateLink,
 }: UserLinkPageProps) {
   const [linkUsername, setLinkUsername] = useState(currentLinkedUser || "");
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    relationshipStartDate || undefined
+  );
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [name, setName] = useState<string>("");
   const [slogan, setSlogan] = useState<string>("");
   const [avatar, setAvatar] = useState<string>("");
@@ -72,10 +86,11 @@ export function UserLinkPage({
       const result = await api.linkUser({
         userUuid,
         partnerName: trimmedUsername,
+        relationshipStartDate: startDate?.toISOString(),
       });
 
-      // 更新本地状态
-      onUpdateLink(trimmedUsername);
+      // 更新本地状态，包含开始日期和 linkKey
+      onUpdateLink(trimmedUsername, startDate || null, result.linkKey);
       Alert.alert("成功", "已成功关联伴侣", [
         {
           text: "确定",
@@ -119,9 +134,10 @@ export function UserLinkPage({
           try {
             await api.unlinkUser({ userUuid });
 
-            // 更新本地状态
-            onUpdateLink(null);
+            // 更新本地状态，清除 linkId
+            onUpdateLink(null, null, null);
             setLinkUsername("");
+            setStartDate(undefined);
             Alert.alert("成功", "已解除关联", [
               {
                 text: "确定",
@@ -137,6 +153,28 @@ export function UserLinkPage({
         },
       },
     ]);
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+      if (event.type === "set" && selectedDate) {
+        setStartDate(selectedDate);
+      }
+    } else {
+      // iOS: 只更新临时日期，不关闭选择器
+      if (selectedDate) {
+        setStartDate(selectedDate);
+      }
+    }
+  };
+
+  const handleConfirmDate = () => {
+    setShowDatePicker(false);
+  };
+
+  const handleCancelDate = () => {
+    setShowDatePicker(false);
   };
 
   const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
@@ -190,7 +228,12 @@ export function UserLinkPage({
 
             {currentLinkedUser ? (
               <View>
-                <View style={styles.linkedBox}>
+                <LinearGradient
+                  colors={["#FFF7ED", "#FFF1F2"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.linkedBox}
+                >
                   <Text style={styles.linkedLabel}>Currently linked with</Text>
                   <View style={styles.partnerRow}>
                     <Image
@@ -209,7 +252,18 @@ export function UserLinkPage({
                       </Text>
                     </View>
                   </View>
-                </View>
+                  {relationshipStartDate && (
+                    <View style={styles.dateInfoRow}>
+                      <CalendarHeart size={16} color="#F97316" />
+                      <Text style={styles.dateInfoText}>
+                        Started:{" "}
+                        <Text style={styles.dateInfoValue}>
+                          {relationshipStartDate.toLocaleDateString()}
+                        </Text>
+                      </Text>
+                    </View>
+                  )}
+                </LinearGradient>
 
                 <TouchableOpacity
                   onPress={handleUnlink}
@@ -244,6 +298,76 @@ export function UserLinkPage({
                     placeholderTextColor="#94A3B8"
                   />
                 </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Relationship Start Date</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowDatePicker(true)}
+                    style={styles.datePickerButton}
+                    activeOpacity={0.8}
+                  >
+                    <Text
+                      style={[
+                        styles.datePickerText,
+                        !startDate && styles.datePickerPlaceholder,
+                      ]}
+                    >
+                      {startDate
+                        ? startDate.toLocaleDateString()
+                        : "Select a date"}
+                    </Text>
+                    <CalendarHeart size={16} color="#94A3B8" />
+                  </TouchableOpacity>
+                </View>
+
+                {Platform.OS === "ios" && (
+                  <Modal
+                    visible={showDatePicker}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={handleCancelDate}
+                  >
+                    <View style={styles.datePickerModal}>
+                      <TouchableOpacity
+                        style={styles.datePickerBackdrop}
+                        activeOpacity={1}
+                        onPress={handleCancelDate}
+                      />
+                      <View style={styles.datePickerContainer}>
+                        <View style={styles.datePickerHeader}>
+                          <TouchableOpacity onPress={handleCancelDate}>
+                            <Text style={styles.datePickerCancelText}>
+                              取消
+                            </Text>
+                          </TouchableOpacity>
+                          <Text style={styles.datePickerTitle}>选择日期</Text>
+                          <TouchableOpacity onPress={handleConfirmDate}>
+                            <Text style={styles.datePickerConfirmText}>
+                              确认
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <DateTimePicker
+                          value={startDate || new Date()}
+                          mode="date"
+                          display="spinner"
+                          onChange={handleDateChange}
+                          maximumDate={new Date()}
+                        />
+                      </View>
+                    </View>
+                  </Modal>
+                )}
+
+                {showDatePicker && Platform.OS === "android" && (
+                  <DateTimePicker
+                    value={startDate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleDateChange}
+                    maximumDate={new Date()}
+                  />
+                )}
 
                 <TouchableOpacity
                   onPress={handleSave}
@@ -387,7 +511,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   linkedBox: {
-    backgroundColor: "#FFF7ED",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -403,6 +526,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    marginBottom: 16,
   },
   partnerAvatar: {
     width: 64,
@@ -421,6 +545,23 @@ const styles = StyleSheet.create({
   partnerSubtitle: {
     fontSize: 12,
     color: "#64748B",
+  },
+  dateInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingTop: 12,
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(249, 115, 22, 0.2)",
+  },
+  dateInfoText: {
+    fontSize: 12,
+    color: "#64748B",
+  },
+  dateInfoValue: {
+    fontWeight: "600",
+    color: "#111827",
   },
   unlinkButton: {
     width: "100%",
@@ -453,6 +594,67 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 14,
     color: "#111827",
+  },
+  datePickerButton: {
+    width: "100%",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  datePickerText: {
+    fontSize: 14,
+    color: "#111827",
+  },
+  datePickerPlaceholder: {
+    color: "#94A3B8",
+  },
+  datePickerModal: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  datePickerBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  datePickerContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingBottom: 20,
+    width: "100%",
+    maxWidth: 400,
+  },
+  datePickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+  },
+  datePickerTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    color: "#64748B",
+  },
+  datePickerConfirmText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#F97316",
   },
   linkButton: {
     width: "100%",

@@ -71,27 +71,33 @@ export type ServerUser = {
 
 export const api = {
   // Wrap server's { data: T } to return T directly for existing callers
-  getMemories: async (): Promise<ServerMemory[]> => {
-    return http<{ data: ServerMemory[] }>("/memories").then((r) => r.data);
+  getMemories: async (userId: string): Promise<ServerMemory[]> => {
+    return http<{ data: ServerMemory[] }>(
+      `/memories?user_id=${encodeURIComponent(userId)}`
+    ).then((r) => r.data);
   },
   createMemory: (payload: {
     title: string;
     details: string;
     photos: string[];
     date: string;
+    userId: string;
   }): Promise<ServerMemory> =>
     http<{ data: ServerMemory }>("/memories", {
       method: "POST",
       body: payload,
     }).then((r) => r.data),
 
-  getRecipes: (): Promise<ServerRecipe[]> =>
-    http<{ data: ServerRecipe[] }>("/recipes").then((r) => r.data),
+  getRecipes: (userId: string): Promise<ServerRecipe[]> =>
+    http<{ data: ServerRecipe[] }>(
+      `/recipes?user_id=${encodeURIComponent(userId)}`
+    ).then((r) => r.data),
   createRecipe: (payload: {
     title: string;
     details: string;
     photos: string[];
     timeCost: { hours: number; minutes: number };
+    userId: string;
   }): Promise<ServerRecipe> =>
     http<{ data: ServerRecipe }>("/recipes", {
       method: "POST",
@@ -132,14 +138,24 @@ export const api = {
     userUuid: string;
     partnerUuid?: string;
     partnerName?: string;
-  }): Promise<{ userUuid: string; linkedUserUuid: string }> =>
-    http<{ data: { userUuid: string; linkedUserUuid: string } }>(
-      "/users/link",
-      {
-        method: "POST",
-        body: payload,
-      }
-    ).then((r) => r.data),
+    relationshipStartDate?: string;
+  }): Promise<{
+    userUuid: string;
+    linkedUserUuid: string;
+    linkKey: string;
+    relationshipStartDate: string | null;
+  }> =>
+    http<{
+      data: {
+        userUuid: string;
+        linkedUserUuid: string;
+        linkKey: string;
+        relationshipStartDate: string | null;
+      };
+    }>("/users/link", {
+      method: "POST",
+      body: payload,
+    }).then((r) => r.data),
 
   unlinkUser: (payload: {
     userUuid: string;
@@ -151,6 +167,25 @@ export const api = {
         body: payload,
       }
     ).then((r) => r.data),
+
+  getRelationship: (
+    userUuid: string
+  ): Promise<{
+    linkKey: string;
+    relationshipStartDate: string | null;
+    createdAt: string;
+    linkedUserUuid: string;
+  } | null> =>
+    http<{
+      data: {
+        linkKey: string;
+        relationshipStartDate: string | null;
+        createdAt: string;
+        linkedUserUuid: string;
+      } | null;
+    }>(`/users/relationship?user_uuid=${encodeURIComponent(userUuid)}`)
+      .then((r) => r.data)
+      .catch(() => null),
 
   // Auth
   register: (payload: {

@@ -125,11 +125,18 @@ export function MemoryListPage({
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
-    setError(null);
-    api
-      .getMemories()
-      .then((data) => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Get user UUID
+        const AsyncStorage =
+          require("@react-native-async-storage/async-storage").default as {
+            getItem: (k: string) => Promise<string | null>;
+          };
+        const userId = (await AsyncStorage.getItem("user:uuid")) || "";
+
+        const data = await api.getMemories(userId);
         if (!mounted) return;
         const mapped: MemoryEntry[] = (data || [])
           .map((m) => ({
@@ -148,9 +155,12 @@ export function MemoryListPage({
             return tb - ta;
           });
         setMemories(mapped);
-      })
-      .catch((e: any) => setError(String(e?.message || e)))
-      .finally(() => setLoading(false));
+      } catch (e: any) {
+        if (mounted) setError(String(e?.message || e));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
     return () => {
       mounted = false;
     };

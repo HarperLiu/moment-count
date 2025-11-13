@@ -88,11 +88,18 @@ export function MenuItems() {
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
-    setError(null);
-    api
-      .getRecipes()
-      .then((data) => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Get user UUID
+        const AsyncStorage =
+          require("@react-native-async-storage/async-storage").default as {
+            getItem: (k: string) => Promise<string | null>;
+          };
+        const userId = (await AsyncStorage.getItem("user:uuid")) || "";
+
+        const data = await api.getRecipes(userId);
         if (!mounted) return;
         const mapped: MenuItem[] = (data || []).slice(0, 3).map((r) => ({
           id: String((r as any).id),
@@ -105,9 +112,12 @@ export function MenuItems() {
           image: (r as any).photos?.[0] || "",
         }));
         setMenuItems(mapped);
-      })
-      .catch((e: any) => setError(String(e?.message || e)))
-      .finally(() => setLoading(false));
+      } catch (e: any) {
+        if (mounted) setError(String(e?.message || e));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
     return () => {
       mounted = false;
     };
