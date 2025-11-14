@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import { Image } from "expo-image";
 import { X, Clock } from "lucide-react-native";
 
-export type RecipeForCard = {
+export type ReceiptForCard = {
   id: string | number;
   name: string;
   description: string;
@@ -11,11 +11,11 @@ export type RecipeForCard = {
   image: string;
 };
 
-export function RecipeDetailCard({
-  recipe,
+export function ReceiptDetailCard({
+  receipt,
   onClose,
 }: {
-  recipe: RecipeForCard;
+  receipt: ReceiptForCard;
   onClose: () => void;
 }) {
   return (
@@ -39,24 +39,24 @@ export function RecipeDetailCard({
 
           <View style={styles.imageBox}>
             <Image
-              source={{ uri: recipe.image }}
+              source={{ uri: receipt.image }}
               style={styles.image}
               contentFit="cover"
               transition={200}
               cachePolicy="memory-disk"
-              recyclingKey={recipe.image}
+              recyclingKey={receipt.image}
             />
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.title}>{recipe.name}</Text>
+            <Text style={styles.title}>{receipt.name}</Text>
 
             <View style={styles.timeRow}>
               <Clock size={14} color="#475569" />
-              <Text style={styles.timeText}>{recipe.timeCost}</Text>
+              <Text style={styles.timeText}>{receipt.timeCost}</Text>
             </View>
 
-            <Text style={styles.desc}>{recipe.description}</Text>
+            <Text style={styles.desc}>{receipt.description}</Text>
 
             <View style={styles.actions}>
               <TouchableOpacity onPress={onClose} style={styles.primaryBtn}>

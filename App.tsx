@@ -12,11 +12,11 @@ import { LogOut, Settings } from "lucide-react-native";
 
 import { InfoCards } from "./components/InfoCards";
 import { MemoriesSection } from "./components/MemoriesSection";
-import { MenuItems } from "./components/MenuItems";
+import { ReceiptItems } from "./components/ReceiptItems";
 import { MemoryListPage } from "./components/MemoryListPage";
 import { CookingReceiptListPage } from "./components/CookingReceiptListPage";
 import { AddMemoryPage } from "./components/AddMemoryPage";
-import { AddRecipePage } from "./components/AddRecipePage";
+import { AddReceiptPage } from "./components/AddReceiptPage";
 import { AuthPage } from "./components/AuthPage";
 import { WelcomePage } from "./components/WelcomePage";
 import { RegisterPage } from "./components/RegisterPage";
@@ -37,7 +37,7 @@ type PageKey =
   | "memories"
   | "cooking"
   | "add-memory"
-  | "add-recipe"
+  | "add-receipt"
   | "settings"
   | "user-link"
   | "edit-profile";
@@ -50,7 +50,7 @@ export default function App() {
   const [relationshipStartDate, setRelationshipStartDate] =
     useState<Date | null>(null);
   const [hasMemories, setHasMemories] = useState(false);
-  const [hasRecipes, setHasRecipes] = useState(false);
+  const [hasReceipts, setHasReceipts] = useState(false);
   const [returnToPage, setReturnToPage] = useState<PageKey>("home");
 
   useEffect(() => {
@@ -149,7 +149,7 @@ export default function App() {
     }
   };
 
-  const handleSaveRecipe = async (recipe: {
+  const handleSaveReceipt = async (receipt: {
     title: string;
     details: string;
     photos: string[];
@@ -163,11 +163,11 @@ export default function App() {
       };
       const userId = (await AsyncStorage.getItem("user:uuid")) || "";
 
-      await api.createRecipe({
-        title: recipe.title,
-        details: recipe.details,
-        photos: recipe.photos,
-        timeCost: recipe.timeCost,
+      await api.createReceipt({
+        title: receipt.title,
+        details: receipt.details,
+        photos: receipt.photos,
+        timeCost: receipt.timeCost,
         userId,
       });
     } finally {
@@ -272,7 +272,10 @@ export default function App() {
       }
 
       setCurrentPage("home");
-    } catch {}
+    } catch (err: any) {
+      // Re-throw the error so RegisterPage can catch it
+      throw new Error(err?.message || "注册失败，请重试");
+    }
   };
 
   const handleLogin = async (data: { username: string; password: string }) => {
@@ -332,7 +335,10 @@ export default function App() {
       }
 
       setCurrentPage("home");
-    } catch {}
+    } catch (err: any) {
+      // Re-throw the error so LoginPage can catch it
+      throw new Error(err?.message || "用户名或密码错误");
+    }
   };
 
   if (!bootstrapped) {
@@ -403,11 +409,11 @@ export default function App() {
     );
   }
 
-  if (currentPage === "add-recipe") {
+  if (currentPage === "add-receipt") {
     return (
-      <AddRecipePage
+      <AddReceiptPage
         onBack={() => setCurrentPage(returnToPage)}
-        onSave={handleSaveRecipe}
+        onSave={handleSaveReceipt}
       />
     );
   }
@@ -428,9 +434,9 @@ export default function App() {
     return (
       <CookingReceiptListPage
         onBack={() => setCurrentPage("home")}
-        onAddRecipe={() => {
+        onAddReceipt={() => {
           setReturnToPage("cooking");
-          setCurrentPage("add-recipe");
+          setCurrentPage("add-receipt");
         }}
       />
     );
@@ -491,18 +497,18 @@ export default function App() {
           <View style={styles.sectionWrapperBottom}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Cooking Receipt</Text>
-              {hasRecipes && (
+              {hasReceipts && (
                 <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
                   <Text style={styles.linkText}>See more</Text>
                 </TouchableOpacity>
               )}
             </View>
-            <MenuItems
-              onAddRecipe={() => {
+            <ReceiptItems
+              onAddReceipt={() => {
                 setReturnToPage("home");
-                setCurrentPage("add-recipe");
+                setCurrentPage("add-receipt");
               }}
-              onDataLoad={setHasRecipes}
+              onDataLoad={setHasReceipts}
             />
           </View>
         </ScrollView>

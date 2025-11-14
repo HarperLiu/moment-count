@@ -14,9 +14,9 @@ import { Image } from "expo-image";
 import { ArrowLeft, Plus, Clock } from "lucide-react-native";
 import { api } from "../app/api";
 import { useTheme } from "../styles/useTheme";
-import { RecipeDetailCard } from "./RecipeDetailCard";
+import { ReceiptDetailCard } from "./ReceiptDetailCard";
 
-type Recipe = {
+type Receipt = {
   id: string;
   name: string;
   description: string;
@@ -32,27 +32,27 @@ function formatTimeCost(hours: number, minutes: number): string {
   return `${hours} h ${minutes} min`;
 }
 
-function RecipeCard({ recipe }: { recipe: Recipe }) {
+function ReceiptCard({ receipt }: { receipt: Receipt }) {
   return (
     <View style={[styles.row, styles.rowBorder]}>
       <View style={styles.flex1}>
-        <Text style={styles.name}>{recipe.name}</Text>
+        <Text style={styles.name}>{receipt.name}</Text>
         <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
-          {recipe.description}
+          {receipt.description}
         </Text>
         <View style={styles.timeRow}>
           <Clock size={14} color="#111827" />
-          <Text style={styles.timeText}>{recipe.timeCost}</Text>
+          <Text style={styles.timeText}>{receipt.timeCost}</Text>
         </View>
       </View>
       <View>
         <Image
-          source={{ uri: recipe.image }}
+          source={{ uri: receipt.image }}
           style={styles.cover}
           contentFit="cover"
           transition={200}
           cachePolicy="memory-disk"
-          recyclingKey={recipe.image}
+          recyclingKey={receipt.image}
         />
       </View>
     </View>
@@ -61,16 +61,16 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 
 export function CookingReceiptListPage({
   onBack,
-  onAddRecipe,
+  onAddReceipt,
 }: {
   onBack: () => void;
-  onAddRecipe: () => void;
+  onAddReceipt: () => void;
 }) {
   const theme = useTheme();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Recipe | null>(null);
+  const [selected, setSelected] = useState<Receipt | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -85,9 +85,9 @@ export function CookingReceiptListPage({
           };
         const userId = (await AsyncStorage.getItem("user:uuid")) || "";
 
-        const data = await api.getRecipes(userId);
+        const data = await api.getReceipts(userId);
         if (!mounted) return;
-        const mapped: Recipe[] = (data || []).map((r) => ({
+        const mapped: Receipt[] = (data || []).map((r) => ({
           id: String((r as any).id),
           name: (r as any).title || "",
           description: (r as any).details || "",
@@ -97,7 +97,7 @@ export function CookingReceiptListPage({
           ),
           image: (r as any).photos?.[0] || "",
         }));
-        setRecipes(mapped);
+        setReceipts(mapped);
       } catch (e: any) {
         if (mounted) setError(String(e?.message || e));
       } finally {
@@ -134,7 +134,7 @@ export function CookingReceiptListPage({
                 Cooking Receipt
               </Text>
             </View>
-            <TouchableOpacity onPress={onAddRecipe} style={styles.iconBtn}>
+            <TouchableOpacity onPress={onAddReceipt} style={styles.iconBtn}>
               <Plus size={20} color={theme.colorForeground} />
             </TouchableOpacity>
           </View>
@@ -150,7 +150,7 @@ export function CookingReceiptListPage({
                   { color: theme.colorMutedForeground },
                 ]}
               >
-                Loading recipes...
+                Loading receipts...
               </Text>
             </View>
           )}
@@ -162,24 +162,24 @@ export function CookingReceiptListPage({
           {!loading && !error && (
             <>
               <FlatList
-                data={recipes}
+                data={receipts}
                 keyExtractor={(r) => String(r.id)}
                 renderItem={({ item, index }) => (
                   <View
                     style={{
-                      marginBottom: index === recipes.length - 1 ? 0 : 16,
+                      marginBottom: index === receipts.length - 1 ? 0 : 16,
                     }}
                   >
                     <Pressable onPress={() => setSelected(item)}>
-                      <RecipeCard recipe={item} />
+                      <ReceiptCard receipt={item} />
                     </Pressable>
                   </View>
                 )}
                 scrollEnabled={false}
               />
               {selected && (
-                <RecipeDetailCard
-                  recipe={selected}
+                <ReceiptDetailCard
+                  receipt={selected}
                   onClose={() => setSelected(null)}
                 />
               )}

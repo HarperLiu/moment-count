@@ -17,12 +17,12 @@ import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { ArrowLeft, Image as ImageIcon, Clock, X } from "lucide-react-native";
 
-export function AddRecipePage({
+export function AddReceiptPage({
   onBack,
   onSave,
 }: {
   onBack: () => void;
-  onSave: (recipe: {
+  onSave: (receipt: {
     title: string;
     details: string;
     photos: string[];
@@ -110,16 +110,16 @@ export function AddRecipePage({
           <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
             <ArrowLeft size={20} color="#111827" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Recipe</Text>
+          <Text style={styles.headerTitle}>New Receipt</Text>
           <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Recipe Name</Text>
+          <Text style={styles.label}>Receipt Name</Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
-            placeholder="Give your recipe a name..."
+            placeholder="Give your receipt a name..."
             style={styles.input}
             placeholderTextColor="#94A3B8"
           />
@@ -215,7 +215,7 @@ export function AddRecipePage({
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.hint}>Share your favorite recipes together</Text>
+        <Text style={styles.hint}>Share your favorite receipts together</Text>
 
         <TouchableOpacity
           onPress={handleSave}
@@ -232,7 +232,7 @@ export function AddRecipePage({
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             {saving && <ActivityIndicator size="small" color="#FFFFFF" />}
-            <Text style={styles.saveBtnText}>Save Recipe</Text>
+            <Text style={styles.saveBtnText}>Save Receipt</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>

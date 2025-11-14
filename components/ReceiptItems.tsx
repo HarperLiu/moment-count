@@ -11,10 +11,10 @@ import {
 import { Image } from "expo-image";
 import { Clock, Plus } from "lucide-react-native";
 import { api } from "../app/api";
-import { RecipeDetailCard } from "./RecipeDetailCard";
+import { ReceiptDetailCard } from "./ReceiptDetailCard";
 import { useTheme } from "../styles/useTheme";
 
-type MenuItem = {
+type Receipt = {
   id: string;
   name: string;
   description: string;
@@ -22,8 +22,8 @@ type MenuItem = {
   image: string;
 };
 
-interface MenuItemsProps {
-  onAddRecipe?: () => void;
+interface ReceiptItemsProps {
+  onAddReceipt?: () => void;
   onDataLoad?: (hasData: boolean) => void;
 }
 
@@ -85,12 +85,12 @@ function SkeletonBox({
   );
 }
 
-export function MenuItems({ onAddRecipe, onDataLoad }: MenuItemsProps) {
+export function ReceiptItems({ onAddReceipt, onDataLoad }: ReceiptItemsProps) {
   const theme = useTheme();
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<MenuItem | null>(null);
+  const [selected, setSelected] = useState<Receipt | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -105,9 +105,9 @@ export function MenuItems({ onAddRecipe, onDataLoad }: MenuItemsProps) {
           };
         const userId = (await AsyncStorage.getItem("user:uuid")) || "";
 
-        const data = await api.getRecipes(userId);
+        const data = await api.getReceipts(userId);
         if (!mounted) return;
-        const mapped: MenuItem[] = (data || []).slice(0, 3).map((r) => ({
+        const mapped: Receipt[] = (data || []).slice(0, 3).map((r) => ({
           id: String((r as any).id),
           name: (r as any).title || "",
           description: (r as any).details || "",
@@ -117,7 +117,7 @@ export function MenuItems({ onAddRecipe, onDataLoad }: MenuItemsProps) {
           ),
           image: (r as any).photos?.[0] || "",
         }));
-        setMenuItems(mapped);
+        setReceipts(mapped);
         onDataLoad?.(mapped.length > 0);
       } catch (e: any) {
         if (mounted) {
@@ -133,12 +133,12 @@ export function MenuItems({ onAddRecipe, onDataLoad }: MenuItemsProps) {
     };
   }, [onDataLoad]);
 
-  const renderItem = ({ item, index }: { item: MenuItem; index: number }) => (
+  const renderItem = ({ item, index }: { item: Receipt; index: number }) => (
     <Pressable
       onPress={() => setSelected(item)}
       style={[
         styles.row,
-        index !== menuItems.length - 1 && [
+        index !== receipts.length - 1 && [
           styles.rowBorder,
           { borderBottomColor: theme.colorBorder },
         ],
@@ -225,19 +225,19 @@ export function MenuItems({ onAddRecipe, onDataLoad }: MenuItemsProps) {
     );
   }
 
-  // Show empty state when not loading and no recipes
-  if (!loading && menuItems.length === 0) {
+  // Show empty state when not loading and no receipts
+  if (!loading && receipts.length === 0) {
     return (
       <>
         <TouchableOpacity
           style={styles.emptyRow}
-          onPress={onAddRecipe}
+          onPress={onAddReceipt}
           activeOpacity={0.7}
         >
           <View style={styles.emptyTextContainer}>
-            <Text style={styles.emptyTitle}>Add your cooking receipt</Text>
+            <Text style={styles.emptyTitle}>Add your first receipt</Text>
             <Text style={styles.emptyDescription}>
-              Start building your recipe collection
+              Start building your receipt collection
             </Text>
           </View>
           <View style={styles.emptyImagePlaceholder}>
@@ -251,14 +251,17 @@ export function MenuItems({ onAddRecipe, onDataLoad }: MenuItemsProps) {
   return (
     <>
       <FlatList
-        data={menuItems}
+        data={receipts}
         keyExtractor={(i) => String(i.id)}
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         scrollEnabled={false}
       />
       {selected && (
-        <RecipeDetailCard recipe={selected} onClose={() => setSelected(null)} />
+        <ReceiptDetailCard
+          receipt={selected}
+          onClose={() => setSelected(null)}
+        />
       )}
     </>
   );

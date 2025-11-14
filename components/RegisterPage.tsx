@@ -20,7 +20,7 @@ interface RegisterPageProps {
     slogan: string;
     username: string;
     password: string;
-  }) => void;
+  }) => Promise<void>;
   onLoginClick: () => void;
 }
 
@@ -31,6 +31,7 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
   const [avatar, setAvatar] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAvatarUpload = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -50,9 +51,10 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
     if (submitting) return;
     try {
       setSubmitting(true);
-      await Promise.resolve(
-        onRegister({ name, slogan, username: avatar, password })
-      );
+      setError(null);
+      await onRegister({ name, slogan, username: avatar, password });
+    } catch (err: any) {
+      setError(err?.message || "注册失败，请重试");
     } finally {
       setSubmitting(false);
     }
@@ -209,12 +211,21 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               </TouchableOpacity>
             </View>
 
+            {/* Error Message */}
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
             {/* Info Text */}
-            <Text
-              style={[styles.infoText, { color: theme.colorMutedForeground }]}
-            >
-              You can change these details later in settings
-            </Text>
+            {!error && (
+              <Text
+                style={[styles.infoText, { color: theme.colorMutedForeground }]}
+              >
+                You can change these details later in settings
+              </Text>
+            )}
 
             {/* Submit Button */}
             <TouchableOpacity
@@ -350,6 +361,18 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     fontSize: 12,
+  },
+  errorContainer: {
+    backgroundColor: "#FEE2E2",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#DC2626",
+    textAlign: "center",
   },
   infoText: {
     fontSize: 12,

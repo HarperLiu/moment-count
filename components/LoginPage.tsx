@@ -13,7 +13,7 @@ import { StatusBar } from "./StatusBar";
 import { useTheme } from "../styles/useTheme";
 
 interface LoginPageProps {
-  onLogin: (data: { username: string; password: string }) => void;
+  onLogin: (data: { username: string; password: string }) => Promise<void>;
   onSignUpClick: () => void;
 }
 
@@ -22,13 +22,17 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!(username.trim() && password.trim())) return;
     if (submitting) return;
     try {
       setSubmitting(true);
-      await Promise.resolve(onLogin({ username, password }));
+      setError(null);
+      await onLogin({ username, password });
+    } catch (err: any) {
+      setError(err?.message || "登录失败，请检查用户名和密码");
     } finally {
       setSubmitting(false);
     }
@@ -122,12 +126,21 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
               />
             </View>
 
+            {/* Error Message */}
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
             {/* Info Text */}
-            <Text
-              style={[styles.infoText, { color: theme.colorMutedForeground }]}
-            >
-              Enter your credentials to access your account
-            </Text>
+            {!error && (
+              <Text
+                style={[styles.infoText, { color: theme.colorMutedForeground }]}
+              >
+                Enter your credentials to access your account
+              </Text>
+            )}
 
             {/* Submit Button */}
             <TouchableOpacity
@@ -240,6 +253,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     borderWidth: 1,
     borderRadius: 8,
+  },
+  errorContainer: {
+    backgroundColor: "#FEE2E2",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#DC2626",
+    textAlign: "center",
   },
   infoText: {
     fontSize: 12,

@@ -52,7 +52,7 @@ export type ServerMemory = {
   photos?: string[]; // server guarantees string[]
 };
 
-export type ServerRecipe = {
+export type ServerReceipt = {
   id: string;
   title?: string;
   details?: string;
@@ -88,18 +88,18 @@ export const api = {
       body: payload,
     }).then((r) => r.data),
 
-  getRecipes: (userId: string): Promise<ServerRecipe[]> =>
-    http<{ data: ServerRecipe[] }>(
+  getReceipts: (userId: string): Promise<ServerReceipt[]> =>
+    http<{ data: ServerReceipt[] }>(
       `/recipes?user_id=${encodeURIComponent(userId)}`
     ).then((r) => r.data),
-  createRecipe: (payload: {
+  createReceipt: (payload: {
     title: string;
     details: string;
     photos: string[];
     timeCost: { hours: number; minutes: number };
     userId: string;
-  }): Promise<ServerRecipe> =>
-    http<{ data: ServerRecipe }>("/recipes", {
+  }): Promise<ServerReceipt> =>
+    http<{ data: ServerReceipt }>("/recipes", {
       method: "POST",
       body: payload,
     }).then((r) => r.data),
