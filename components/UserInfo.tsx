@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { Link } from "lucide-react-native";
+import { useThemeContext } from "../styles/ThemeContext";
 
 interface UserInfoProps {
   linkedUser?: string | null;
@@ -9,6 +10,7 @@ interface UserInfoProps {
 }
 
 export function UserInfo({ linkedUser, onLinkClick }: UserInfoProps) {
+  const { theme } = useThemeContext();
   const [name, setName] = useState<string>("");
   const [slogan, setSlogan] = useState<string>("");
   const [avatar, setAvatar] = useState<string>("");
@@ -44,16 +46,25 @@ export function UserInfo({ linkedUser, onLinkClick }: UserInfoProps) {
         cachePolicy="memory-disk"
       />
       <View style={styles.textCol}>
-        <Text style={styles.title}>{name || "User"}</Text>
+        <Text style={[styles.title, { color: theme.colorForeground }]}>
+          {name || "User"}
+        </Text>
         {!!slogan && (
-          <Text style={styles.subtitle} numberOfLines={2}>
+          <Text
+            style={[styles.subtitle, { color: theme.colorMutedForeground }]}
+            numberOfLines={2}
+          >
             {slogan}
           </Text>
         )}
         {linkedUser ? (
           <View style={styles.linkRow}>
-            <Link size={14} color="#64748B" />
-            <Text style={styles.linkText}>Linked with {linkedUser}</Text>
+            <Link size={14} color={theme.colorMutedForeground} />
+            <Text
+              style={[styles.linkText, { color: theme.colorMutedForeground }]}
+            >
+              Linked with {linkedUser}
+            </Text>
           </View>
         ) : (
           <TouchableOpacity
@@ -91,11 +102,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
   },
   subtitle: {
     fontSize: 12,
-    color: "#64748B",
     marginBottom: 8,
   },
   linkRow: {
@@ -104,7 +113,6 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 12,
-    color: "#64748B",
     marginLeft: 6,
   },
   linkButton: {

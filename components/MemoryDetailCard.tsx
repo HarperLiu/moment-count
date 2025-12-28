@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { X, Calendar } from "lucide-react-native";
+import { useThemeContext } from "../styles/ThemeContext";
 
 export type MemoryPhoto = { url: string; alt?: string };
 export type MemoryDetail = {
@@ -31,6 +32,7 @@ export function MemoryDetailCard({
   initialImageIndex?: number;
   onClose: () => void;
 }) {
+  const { theme } = useThemeContext();
   const [index, setIndex] = useState(
     Math.min(initialImageIndex, Math.max(0, (memory.photos?.length || 1) - 1))
   );
@@ -65,13 +67,19 @@ export function MemoryDetailCard({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.card}>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <X size={18} color="#111827" />
+        <View style={[styles.card, { backgroundColor: theme.colorCard }]}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={[
+              styles.closeBtn,
+              { backgroundColor: theme.colorCard + "E6" },
+            ]}
+          >
+            <X size={18} color={theme.colorForeground} />
           </TouchableOpacity>
 
           <View
-            style={styles.carouselBox}
+            style={[styles.carouselBox, { backgroundColor: theme.colorMuted }]}
             onLayout={(e) => {
               const w = e.nativeEvent.layout.width;
               if (w && w !== carouselWidth) setCarouselWidth(w);
@@ -114,7 +122,7 @@ export function MemoryDetailCard({
                         style={{
                           width: "100%",
                           height: "100%",
-                          backgroundColor: "#E5E7EB",
+                          backgroundColor: theme.colorMuted,
                         }}
                       />
                     )}
@@ -148,12 +156,22 @@ export function MemoryDetailCard({
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.headline}>{memory.headline}</Text>
+            <Text style={[styles.headline, { color: theme.colorForeground }]}>
+              {memory.headline}
+            </Text>
             <View style={styles.dateRow}>
-              <Calendar size={14} color="#475569" />
-              <Text style={styles.dateText}>{formattedDate}</Text>
+              <Calendar size={14} color={theme.colorMutedForeground} />
+              <Text
+                style={[styles.dateText, { color: theme.colorMutedForeground }]}
+              >
+                {formattedDate}
+              </Text>
             </View>
-            <Text style={styles.details}>{memory.details}</Text>
+            <Text
+              style={[styles.details, { color: theme.colorMutedForeground }]}
+            >
+              {memory.details}
+            </Text>
             <View style={{ alignItems: "flex-end" }}>
               <TouchableOpacity onPress={onClose} style={styles.primaryBtn}>
                 <Text style={styles.primaryBtnText}>Close</Text>
@@ -177,7 +195,6 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 360,
-    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     overflow: "hidden",
   },
@@ -189,14 +206,12 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.9)",
     alignItems: "center",
     justifyContent: "center",
   },
   carouselBox: {
     width: "100%",
     aspectRatio: 1,
-    backgroundColor: "#E5E7EB",
   },
   indicators: {
     position: "absolute",
@@ -214,7 +229,6 @@ const styles = StyleSheet.create({
   headline: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#0F172A",
     marginBottom: 8,
   },
   dateRow: {
@@ -223,8 +237,8 @@ const styles = StyleSheet.create({
     gap: 6 as any,
     marginBottom: 8,
   },
-  dateText: { fontSize: 13, color: "#475569" },
-  details: { fontSize: 14, color: "#475569", lineHeight: 20, marginBottom: 16 },
+  dateText: { fontSize: 13 },
+  details: { fontSize: 14, lineHeight: 20, marginBottom: 16 },
   primaryBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,

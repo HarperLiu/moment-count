@@ -12,7 +12,7 @@ import { Image } from "expo-image";
 import { Clock, Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { ReceiptDetailCard } from "./ReceiptDetailCard";
-import { useTheme } from "../styles/useTheme";
+import { useThemeContext } from "../styles/ThemeContext";
 
 type Receipt = {
   id: string;
@@ -86,7 +86,7 @@ function SkeletonBox({
 }
 
 export function ReceiptItems({ onAddReceipt, onDataLoad }: ReceiptItemsProps) {
-  const theme = useTheme();
+  const { theme } = useThemeContext();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -230,18 +230,36 @@ export function ReceiptItems({ onAddReceipt, onDataLoad }: ReceiptItemsProps) {
     return (
       <>
         <TouchableOpacity
-          style={styles.emptyRow}
+          style={[
+            styles.emptyRow,
+            {
+              backgroundColor: theme.colorSecondary,
+              borderColor: theme.colorBorder,
+            },
+          ]}
           onPress={onAddReceipt}
           activeOpacity={0.7}
         >
           <View style={styles.emptyTextContainer}>
-            <Text style={styles.emptyTitle}>Add your first receipt</Text>
-            <Text style={styles.emptyDescription}>
+            <Text style={[styles.emptyTitle, { color: theme.colorForeground }]}>
+              Add your first receipt
+            </Text>
+            <Text
+              style={[
+                styles.emptyDescription,
+                { color: theme.colorMutedForeground },
+              ]}
+            >
               Start building your receipt collection
             </Text>
           </View>
-          <View style={styles.emptyImagePlaceholder}>
-            <Plus size={24} color="#94A3B8" />
+          <View
+            style={[
+              styles.emptyImagePlaceholder,
+              { backgroundColor: theme.colorMuted },
+            ]}
+          >
+            <Plus size={24} color={theme.colorMutedForeground} />
           </View>
         </TouchableOpacity>
       </>
@@ -270,13 +288,11 @@ export function ReceiptItems({ onAddReceipt, onDataLoad }: ReceiptItemsProps) {
 const styles = StyleSheet.create({
   emptyRow: {
     flexDirection: "row",
-    backgroundColor: "#F1F5F9",
     padding: 16,
     borderRadius: 16,
     alignItems: "center",
     gap: 12 as any,
     borderWidth: 2,
-    borderColor: "#E2E8F0",
     borderStyle: "dashed",
   },
   emptyTextContainer: {
@@ -286,18 +302,15 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#475569",
     marginBottom: 4,
   },
   emptyDescription: {
     fontSize: 13,
-    color: "#94A3B8",
   },
   emptyImagePlaceholder: {
     width: 96,
     height: 96,
     borderRadius: 16,
-    backgroundColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -309,22 +322,19 @@ const styles = StyleSheet.create({
   },
   rowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#F1F5F9",
   },
   flex1: { flex: 1, minHeight: 96, justifyContent: "space-between" },
   name: {
     marginBottom: 4,
     fontSize: 16,
     fontWeight: "700",
-    color: "#111827",
   },
   desc: {
     fontSize: 13,
-    color: "#6B7280",
     marginBottom: 8,
     marginRight: 4,
   },
   timeRow: { flexDirection: "row", alignItems: "center", gap: 4 as any },
-  timeText: { marginLeft: 4, fontSize: 13, color: "#111827" },
+  timeText: { marginLeft: 4, fontSize: 13 },
   cover: { width: 96, height: 96, borderRadius: 16 },
 });

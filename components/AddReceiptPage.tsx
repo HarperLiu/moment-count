@@ -16,6 +16,7 @@ import { api } from "../app/api";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { ArrowLeft, Image as ImageIcon, Clock, X } from "lucide-react-native";
+import { useThemeContext } from "../styles/ThemeContext";
 
 export function AddReceiptPage({
   onBack,
@@ -29,6 +30,7 @@ export function AddReceiptPage({
     timeCost: { hours: number; minutes: number };
   }) => void;
 }) {
+  const { theme } = useThemeContext();
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
@@ -104,57 +106,112 @@ export function AddReceiptPage({
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-            <ArrowLeft size={20} color="#111827" />
+            <ArrowLeft size={20} color={theme.colorForeground} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Receipt</Text>
+          <Text style={[styles.headerTitle, { color: theme.colorForeground }]}>
+            New Receipt
+          </Text>
           <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Receipt Name</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Receipt Name
+          </Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
             placeholder="Give your receipt a name..."
-            style={styles.input}
-            placeholderTextColor="#94A3B8"
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.colorCard,
+                borderColor: theme.colorBorder,
+                color: theme.colorForeground,
+              },
+            ]}
+            placeholderTextColor={theme.colorMutedForeground}
           />
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Time to Cook</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Time to Cook
+          </Text>
           <View style={styles.pickerRow}>
             <View style={styles.pickerCol}>
               <View style={styles.pickerHeader}>
-                <Clock size={16} color="#94A3B8" />
-                <Text style={styles.pickerHeaderText}>Hours</Text>
+                <Clock size={16} color={theme.colorMutedForeground} />
+                <Text
+                  style={[
+                    styles.pickerHeaderText,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
+                  Hours
+                </Text>
               </View>
-              <View style={styles.pickerBox}>
+              <View
+                style={[
+                  styles.pickerBox,
+                  {
+                    backgroundColor: theme.colorCard,
+                    borderColor: theme.colorBorder,
+                  },
+                ]}
+              >
                 <Picker
                   selectedValue={hours}
                   onValueChange={(v) => setHours(String(v))}
                 >
                   {Array.from({ length: 11 }).map((_, i) => (
-                    <Picker.Item key={i} label={`${i}`} value={String(i)} />
+                    <Picker.Item
+                      key={i}
+                      label={`${i}`}
+                      value={String(i)}
+                      color={theme.colorForeground}
+                    />
                   ))}
                 </Picker>
               </View>
             </View>
             <View style={styles.pickerCol}>
               <View style={styles.pickerHeader}>
-                <Text style={styles.pickerHeaderText}>Minutes</Text>
+                <Text
+                  style={[
+                    styles.pickerHeaderText,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
+                  Minutes
+                </Text>
               </View>
-              <View style={styles.pickerBox}>
+              <View
+                style={[
+                  styles.pickerBox,
+                  {
+                    backgroundColor: theme.colorCard,
+                    borderColor: theme.colorBorder,
+                  },
+                ]}
+              >
                 <Picker
                   selectedValue={minutes}
                   onValueChange={(v) => setMinutes(String(v))}
                 >
                   {["0", "15", "30", "45"].map((m) => (
-                    <Picker.Item key={m} label={m} value={m} />
+                    <Picker.Item
+                      key={m}
+                      label={m}
+                      value={m}
+                      color={theme.colorForeground}
+                    />
                   ))}
                 </Picker>
               </View>
@@ -163,19 +220,32 @@ export function AddReceiptPage({
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Instructions</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Instructions
+          </Text>
           <TextInput
             value={details}
             onChangeText={setDetails}
             placeholder="Write the cooking instructions..."
-            style={[styles.input, { height: 120, textAlignVertical: "top" }]}
-            placeholderTextColor="#94A3B8"
+            style={[
+              styles.input,
+              {
+                height: 120,
+                textAlignVertical: "top",
+                backgroundColor: theme.colorCard,
+                borderColor: theme.colorBorder,
+                color: theme.colorForeground,
+              },
+            ]}
+            placeholderTextColor={theme.colorMutedForeground}
             multiline
           />
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Photos</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Photos
+          </Text>
           {photos.length > 0 && (
             <ScrollView
               horizontal
@@ -209,13 +279,28 @@ export function AddReceiptPage({
               </View>
             </ScrollView>
           )}
-          <TouchableOpacity style={styles.uploadBox} onPress={handlePickImages}>
-            <ImageIcon size={28} color="#94A3B8" />
-            <Text style={styles.uploadText}>Tap to add photos</Text>
+          <TouchableOpacity
+            style={[
+              styles.uploadBox,
+              {
+                borderColor: theme.colorBorder,
+                backgroundColor: theme.colorSecondary,
+              },
+            ]}
+            onPress={handlePickImages}
+          >
+            <ImageIcon size={28} color={theme.colorMutedForeground} />
+            <Text
+              style={[styles.uploadText, { color: theme.colorMutedForeground }]}
+            >
+              Tap to add photos
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.hint}>Share your favorite receipts together</Text>
+        <Text style={[styles.hint, { color: theme.colorMutedForeground }]}>
+          Share your favorite receipts together
+        </Text>
 
         <TouchableOpacity
           onPress={handleSave}
@@ -241,7 +326,7 @@ export function AddReceiptPage({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F8FAFC" },
+  screen: { flex: 1 },
   content: { padding: 16 },
   headerRow: {
     flexDirection: "row",
@@ -256,7 +341,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
+  headerTitle: { fontSize: 18, fontWeight: "700" },
   saveBtn: {
     marginTop: 12,
     backgroundColor: "#F97316",
@@ -267,15 +352,12 @@ const styles = StyleSheet.create({
   saveBtnText: { color: "#FFFFFF", fontWeight: "700" },
 
   fieldBlock: { marginTop: 12 },
-  label: { fontSize: 12, color: "#64748B", marginBottom: 6 },
+  label: { fontSize: 12, marginBottom: 6 },
   input: {
-    backgroundColor: "#FFFFFF",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#E2E8F0",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: "#0F172A",
     fontSize: 14,
   },
 
@@ -287,11 +369,9 @@ const styles = StyleSheet.create({
     gap: 6 as any,
     marginBottom: 6,
   },
-  pickerHeaderText: { fontSize: 12, color: "#64748B" },
+  pickerHeaderText: { fontSize: 12 },
   pickerBox: {
-    backgroundColor: "#FFFFFF",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#E2E8F0",
     borderRadius: 12,
   },
 
@@ -299,14 +379,12 @@ const styles = StyleSheet.create({
     height: 96,
     borderWidth: 2,
     borderStyle: "dashed",
-    borderColor: "#CBD5E1",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFF7ED33",
     gap: 4 as any,
   },
-  uploadText: { fontSize: 13, color: "#64748B" },
+  uploadText: { fontSize: 13 },
   thumbBox: {
     width: 80,
     height: 80,
@@ -328,5 +406,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  hint: { marginTop: 8, fontSize: 12, color: "#94A3B8", textAlign: "center" },
+  hint: { marginTop: 8, fontSize: 12, textAlign: "center" },
 });

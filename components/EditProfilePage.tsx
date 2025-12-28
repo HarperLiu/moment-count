@@ -14,6 +14,7 @@ import { ArrowLeft, Upload } from "lucide-react-native";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { api } from "../app/api";
+import { useThemeContext } from "../styles/ThemeContext";
 
 interface EditProfilePageProps {
   onBack: () => void;
@@ -21,6 +22,7 @@ interface EditProfilePageProps {
 }
 
 export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
+  const { theme } = useThemeContext();
   const [name, setName] = useState("");
   const [slogan, setSlogan] = useState("");
   const [avatar, setAvatar] = useState("");
@@ -154,19 +156,33 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
   const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* Sticky Header */}
-        <View style={styles.stickyHeader}>
+        <View
+          style={[
+            styles.stickyHeader,
+            {
+              backgroundColor: theme.colorBackground,
+              borderBottomColor: theme.colorBorder,
+            },
+          ]}
+        >
           <View style={styles.stickyRow}>
             <View style={styles.leftGroup}>
               <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color="#111827" />
+                <ArrowLeft size={20} color={theme.colorForeground} />
               </TouchableOpacity>
-              <Text style={styles.pageTitle}>Edit Profile</Text>
+              <Text
+                style={[styles.pageTitle, { color: theme.colorForeground }]}
+              >
+                Edit Profile
+              </Text>
             </View>
           </View>
         </View>
@@ -192,12 +208,23 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
 
             <TouchableOpacity
               onPress={handleAvatarUpload}
-              style={styles.uploadButton}
+              style={[
+                styles.uploadButton,
+                {
+                  backgroundColor: theme.colorCard,
+                  borderColor: theme.colorBorder,
+                },
+              ]}
               activeOpacity={0.7}
               disabled={isUploading}
             >
               <Upload size={16} color="#F97316" />
-              <Text style={styles.uploadButtonText}>
+              <Text
+                style={[
+                  styles.uploadButtonText,
+                  { color: theme.colorMutedForeground },
+                ]}
+              >
                 {isUploading ? "Uploading..." : "Change Avatar"}
               </Text>
             </TouchableOpacity>
@@ -205,27 +232,43 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
 
           {/* Name Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
               Name <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
               placeholder="Enter your name"
-              style={styles.input}
-              placeholderTextColor="#94A3B8"
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.colorCard,
+                  borderColor: theme.colorBorder,
+                  color: theme.colorForeground,
+                },
+              ]}
+              placeholderTextColor={theme.colorMutedForeground}
             />
           </View>
 
           {/* Slogan Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Slogan</Text>
+            <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+              Slogan
+            </Text>
             <TextInput
               value={slogan}
               onChangeText={setSlogan}
               placeholder="What's your motto?"
-              style={styles.input}
-              placeholderTextColor="#94A3B8"
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.colorCard,
+                  borderColor: theme.colorBorder,
+                  color: theme.colorForeground,
+                },
+              ]}
+              placeholderTextColor={theme.colorMutedForeground}
             />
           </View>
 
@@ -257,18 +300,15 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
   },
   content: {
     paddingBottom: 20,
   },
   stickyHeader: {
-    backgroundColor: "#F8FAFC",
     paddingTop: 12,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E2E8F0",
   },
   stickyRow: {
     flexDirection: "row",
@@ -290,7 +330,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
   },
   formContent: {
     paddingHorizontal: 20,
@@ -326,21 +365,17 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
     borderRadius: 12,
   },
   uploadButtonText: {
     fontSize: 14,
-    color: "#475569",
   },
   inputGroup: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
-    color: "#64748B",
     marginBottom: 8,
   },
   required: {
@@ -350,12 +385,9 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
     borderRadius: 12,
     fontSize: 14,
-    color: "#111827",
   },
   saveButton: {
     width: "100%",

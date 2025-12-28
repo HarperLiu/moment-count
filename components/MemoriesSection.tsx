@@ -12,6 +12,7 @@ import { Image } from "expo-image";
 import { Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { MemoryDetailCard, MemoryDetail } from "./MemoryDetailCard";
+import { useThemeContext } from "../styles/ThemeContext";
 type Memory = MemoryDetail & { image: string };
 
 interface MemoriesSectionProps {
@@ -88,6 +89,7 @@ export function MemoriesSection({
   onAddMemory,
   onDataLoad,
 }: MemoriesSectionProps) {
+  const { theme } = useThemeContext();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +172,9 @@ export function MemoriesSection({
           style={{ marginTop: 8, alignSelf: "center", borderRadius: 4 }}
         />
       ) : (
-        <Text style={styles.date}>{formatDate(item.date)}</Text>
+        <Text style={[styles.date, { color: theme.colorMutedForeground }]}>
+          {formatDate(item.date)}
+        </Text>
       )}
     </View>
   );
@@ -182,14 +186,29 @@ export function MemoriesSection({
         <View style={styles.row}>
           <View style={styles.item}>
             <TouchableOpacity
-              style={styles.emptyCard}
+              style={[
+                styles.emptyCard,
+                {
+                  backgroundColor: theme.colorSecondary,
+                  borderColor: theme.colorBorder,
+                },
+              ]}
               onPress={onAddMemory}
               activeOpacity={0.7}
             >
               <View style={styles.emptyContent}>
-                <Plus size={32} color="#94A3B8" />
-                <Text style={styles.emptyTitle}>Add your memory</Text>
-                <Text style={styles.emptyDescription}>
+                <Plus size={32} color={theme.colorMutedForeground} />
+                <Text
+                  style={[styles.emptyTitle, { color: theme.colorForeground }]}
+                >
+                  Add your memory
+                </Text>
+                <Text
+                  style={[
+                    styles.emptyDescription,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
                   Capture special moments
                 </Text>
               </View>
@@ -220,14 +239,12 @@ export function MemoriesSection({
 
 const styles = StyleSheet.create({
   emptyCard: {
-    backgroundColor: "#F1F5F9",
     borderRadius: 16,
     aspectRatio: 4 / 3,
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
     borderStyle: "dashed",
     padding: 8,
   },
@@ -239,12 +256,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#475569",
     textAlign: "center",
   },
   emptyDescription: {
     fontSize: 12,
-    color: "#94A3B8",
     textAlign: "center",
   },
   row: {
@@ -275,7 +290,6 @@ const styles = StyleSheet.create({
   date: {
     marginTop: 8,
     fontSize: 12,
-    color: "#6B7280",
     textAlign: "center",
   },
 });

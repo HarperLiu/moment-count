@@ -27,7 +27,8 @@ import { SettingsPage } from "./components/SettingsPage";
 import { UserLinkPage } from "./components/UserLinkPage";
 import { EditProfilePage } from "./components/EditProfilePage";
 import { AboutPage } from "./components/AboutPage";
-import { useTheme } from "./styles/useTheme";
+import { AppearancePage } from "./components/AppearancePage";
+import { ThemeProvider, useThemeContext } from "./styles/ThemeContext";
 
 type PageKey =
   | "welcome"
@@ -42,10 +43,19 @@ type PageKey =
   | "settings"
   | "user-link"
   | "edit-profile"
-  | "about";
+  | "about"
+  | "appearance";
 
 export default function App() {
-  const theme = useTheme();
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
+  const { theme, isDark, setThemeMode } = useThemeContext();
   const [currentPage, setCurrentPage] = useState<PageKey>("welcome");
   const [bootstrapped, setBootstrapped] = useState(false);
   const [linkedUser, setLinkedUser] = useState<string | null>(null);
@@ -377,6 +387,19 @@ export default function App() {
         onNavigateToUserLink={() => setCurrentPage("user-link")}
         onNavigateToEditProfile={() => setCurrentPage("edit-profile")}
         onNavigateToAbout={() => setCurrentPage("about")}
+        onNavigateToAppearance={() => setCurrentPage("appearance")}
+      />
+    );
+  }
+
+  if (currentPage === "appearance") {
+    return (
+      <AppearancePage
+        onBack={() => setCurrentPage("settings")}
+        darkMode={isDark}
+        onToggleDarkMode={(enabled) => {
+          setThemeMode(enabled ? "dark" : "light");
+        }}
       />
     );
   }
@@ -466,7 +489,10 @@ export default function App() {
             {/* Settings Button (top-right) */}
             <TouchableOpacity
               onPress={() => setCurrentPage("settings")}
-              style={styles.settingsBtn}
+              style={[
+                styles.settingsBtn,
+                { backgroundColor: theme.colorCard + "CC" },
+              ]}
             >
               <Settings size={18} color={theme.colorForeground} />
             </TouchableOpacity>
@@ -484,10 +510,21 @@ export default function App() {
           {/* Memories Section */}
           <View style={styles.sectionWrapper}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Memory</Text>
+              <Text
+                style={[styles.sectionTitle, { color: theme.colorForeground }]}
+              >
+                Memory
+              </Text>
               {hasMemories && (
                 <TouchableOpacity onPress={() => setCurrentPage("memories")}>
-                  <Text style={styles.linkText}>See more</Text>
+                  <Text
+                    style={[
+                      styles.linkText,
+                      { color: theme.colorMutedForeground },
+                    ]}
+                  >
+                    See more
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -503,10 +540,21 @@ export default function App() {
           {/* Cooking Receipt Section */}
           <View style={styles.sectionWrapperBottom}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Cooking Receipt</Text>
+              <Text
+                style={[styles.sectionTitle, { color: theme.colorForeground }]}
+              >
+                Cooking Receipt
+              </Text>
               {hasReceipts && (
                 <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
-                  <Text style={styles.linkText}>See more</Text>
+                  <Text
+                    style={[
+                      styles.linkText,
+                      { color: theme.colorMutedForeground },
+                    ]}
+                  >
+                    See more
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -577,7 +625,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.8)",
   },
   sectionWrapper: {
     paddingHorizontal: 20,
@@ -596,10 +643,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
   },
   linkText: {
     fontSize: 14,
-    color: "#6B7280",
   },
 });

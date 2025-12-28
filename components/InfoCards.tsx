@@ -11,12 +11,14 @@ import {
 import * as Location from "expo-location";
 import { api } from "../app/api";
 import { MapComponent } from "./MapComponent";
+import { useThemeContext } from "../styles/ThemeContext";
 
 interface InfoCardsProps {
   relationshipStartDate: Date | null;
 }
 
 export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
+  const { theme } = useThemeContext();
   const [tempC, setTempC] = useState<number | null>(null);
 
   const daysTogether = useMemo(() => {
@@ -113,18 +115,29 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
         {/* Left Column: Countdown and Weather */}
         <View style={styles.leftColumn}>
           {/* Countdown Card */}
-          <View style={styles.card}>
+          <View
+            style={[styles.card, { backgroundColor: theme.colorSecondary }]}
+          >
             <View style={styles.cardRow}>
-              <CalendarHeart size={20} color="#111827" />
+              <CalendarHeart size={20} color={theme.colorForeground} />
               <View style={styles.cardCol}>
-                <Text style={styles.metric}>
-                  <Text style={styles.metricStrong}>{daysTogether}</Text>{" "}
+                <Text
+                  style={[styles.metric, { color: theme.colorMutedForeground }]}
+                >
+                  <Text
+                    style={[
+                      styles.metricStrong,
+                      { color: theme.colorForeground },
+                    ]}
+                  >
+                    {daysTogether}
+                  </Text>{" "}
                   {daysTogether === 1 ? "day" : "days"}
                 </Text>
               </View>
             </View>
             <Text
-              style={styles.dateText}
+              style={[styles.dateText, { color: theme.colorMutedForeground }]}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -133,12 +146,21 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
           </View>
 
           {/* Weather Card */}
-          <View style={styles.card}>
+          <View
+            style={[styles.card, { backgroundColor: theme.colorSecondary }]}
+          >
             <View style={styles.cardRow}>
-              <WeatherIcon size={20} color="#111827" />
+              <WeatherIcon size={20} color={theme.colorForeground} />
               <View style={styles.cardCol}>
-                <Text style={styles.metric}>
-                  <Text style={styles.metricStrong}>
+                <Text
+                  style={[styles.metric, { color: theme.colorMutedForeground }]}
+                >
+                  <Text
+                    style={[
+                      styles.metricStrong,
+                      { color: theme.colorForeground },
+                    ]}
+                  >
                     {tempC != null ? Math.round(tempC) : "--"}
                   </Text>{" "}
                   ℃
@@ -146,7 +168,10 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
               </View>
             </View>
             <Text
-              style={styles.weatherDescription}
+              style={[
+                styles.weatherDescription,
+                { color: theme.colorMutedForeground },
+              ]}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -184,7 +209,6 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
     paddingVertical: 8,
     paddingHorizontal: 8,
     borderRadius: 16,
@@ -198,23 +222,19 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   metric: {
-    color: "#374151",
     fontSize: 14,
   },
   metricStrong: {
     fontWeight: "600",
-    color: "#111827",
     fontSize: 16,
   },
   dateText: {
     fontSize: 11,
-    color: "#94A3B8",
     marginTop: 4,
     textAlign: "left",
   },
   weatherDescription: {
     fontSize: 11,
-    color: "#94A3B8",
     marginTop: 4,
     textAlign: "center",
   },

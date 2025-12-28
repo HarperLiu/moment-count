@@ -17,6 +17,7 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { api } from "../app/api";
+import { useThemeContext } from "../styles/ThemeContext";
 
 interface UserLinkPageProps {
   onBack: () => void;
@@ -35,6 +36,7 @@ export function UserLinkPage({
   relationshipStartDate,
   onUpdateLink,
 }: UserLinkPageProps) {
+  const { theme } = useThemeContext();
   const [linkUsername, setLinkUsername] = useState(currentLinkedUser || "");
   const [startDate, setStartDate] = useState<Date | undefined>(
     relationshipStartDate || undefined
@@ -180,25 +182,41 @@ export function UserLinkPage({
   const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorSecondary }]}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* Sticky Header */}
-        <View style={styles.stickyHeader}>
+        <View
+          style={[
+            styles.stickyHeader,
+            {
+              backgroundColor: theme.colorSecondary,
+              borderBottomColor: theme.colorBorder,
+            },
+          ]}
+        >
           <View style={styles.stickyRow}>
             <View style={styles.leftGroup}>
               <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color="#111827" />
+                <ArrowLeft size={20} color={theme.colorForeground} />
               </TouchableOpacity>
-              <Text style={styles.pageTitle}>User Link</Text>
+              <Text
+                style={[styles.pageTitle, { color: theme.colorForeground }]}
+              >
+                User Link
+              </Text>
             </View>
           </View>
         </View>
 
         {/* Profile Section */}
-        <View style={styles.profileSection}>
+        <View
+          style={[styles.profileSection, { backgroundColor: theme.colorCard }]}
+        >
           <View style={styles.profileRow}>
             <Image
               source={avatarSource}
@@ -208,33 +226,65 @@ export function UserLinkPage({
               cachePolicy="memory-disk"
             />
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{name || "User"}</Text>
-              {!!slogan && <Text style={styles.profileSlogan}>{slogan}</Text>}
+              <Text
+                style={[styles.profileName, { color: theme.colorForeground }]}
+              >
+                {name || "User"}
+              </Text>
+              {!!slogan && (
+                <Text
+                  style={[
+                    styles.profileSlogan,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
+                  {slogan}
+                </Text>
+              )}
             </View>
           </View>
         </View>
 
         {/* Link Section */}
         <View style={styles.linkSection}>
-          <View style={styles.linkCard}>
+          <View style={[styles.linkCard, { backgroundColor: theme.colorCard }]}>
             <View style={styles.linkCardHeader}>
               <Link size={20} color="#F97316" />
-              <Text style={styles.linkCardTitle}>Link with Someone</Text>
+              <Text
+                style={[styles.linkCardTitle, { color: theme.colorForeground }]}
+              >
+                Link with Someone
+              </Text>
             </View>
 
-            <Text style={styles.linkDescription}>
+            <Text
+              style={[
+                styles.linkDescription,
+                { color: theme.colorMutedForeground },
+              ]}
+            >
               Connect with your partner to share memories and moments together.
             </Text>
 
             {currentLinkedUser ? (
               <View>
-                <LinearGradient
-                  colors={["#FFF7ED", "#FFF1F2"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.linkedBox}
+                <View
+                  style={[
+                    styles.linkedBox,
+                    {
+                      backgroundColor: theme.colorSecondary,
+                      borderColor: theme.colorBorder,
+                    },
+                  ]}
                 >
-                  <Text style={styles.linkedLabel}>Currently linked with</Text>
+                  <Text
+                    style={[
+                      styles.linkedLabel,
+                      { color: theme.colorMutedForeground },
+                    ]}
+                  >
+                    Currently linked with
+                  </Text>
                   <View style={styles.partnerRow}>
                     <Image
                       source={avatarSource}
@@ -244,26 +294,51 @@ export function UserLinkPage({
                       cachePolicy="memory-disk"
                     />
                     <View style={styles.partnerInfo}>
-                      <Text style={styles.partnerName}>
+                      <Text
+                        style={[
+                          styles.partnerName,
+                          { color: theme.colorForeground },
+                        ]}
+                      >
                         {currentLinkedUser}
                       </Text>
-                      <Text style={styles.partnerSubtitle}>
+                      <Text
+                        style={[
+                          styles.partnerSubtitle,
+                          { color: theme.colorMutedForeground },
+                        ]}
+                      >
                         Sharing moments together
                       </Text>
                     </View>
                   </View>
                   {relationshipStartDate && (
-                    <View style={styles.dateInfoRow}>
+                    <View
+                      style={[
+                        styles.dateInfoRow,
+                        { borderTopColor: theme.colorBorder },
+                      ]}
+                    >
                       <CalendarHeart size={16} color="#F97316" />
-                      <Text style={styles.dateInfoText}>
+                      <Text
+                        style={[
+                          styles.dateInfoText,
+                          { color: theme.colorMutedForeground },
+                        ]}
+                      >
                         Started:{" "}
-                        <Text style={styles.dateInfoValue}>
+                        <Text
+                          style={[
+                            styles.dateInfoValue,
+                            { color: theme.colorForeground },
+                          ]}
+                        >
                           {relationshipStartDate.toLocaleDateString()}
                         </Text>
                       </Text>
                     </View>
                   )}
-                </LinearGradient>
+                </View>
 
                 <TouchableOpacity
                   onPress={handleUnlink}
@@ -289,34 +364,64 @@ export function UserLinkPage({
             ) : (
               <View>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Partner's Username</Text>
+                  <Text
+                    style={[
+                      styles.label,
+                      { color: theme.colorMutedForeground },
+                    ]}
+                  >
+                    Partner's Username
+                  </Text>
                   <TextInput
                     value={linkUsername}
                     onChangeText={setLinkUsername}
                     placeholder="Enter username"
-                    style={styles.input}
-                    placeholderTextColor="#94A3B8"
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: theme.colorSecondary,
+                        color: theme.colorForeground,
+                      },
+                    ]}
+                    placeholderTextColor={theme.colorMutedForeground}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Relationship Start Date</Text>
+                  <Text
+                    style={[
+                      styles.label,
+                      { color: theme.colorMutedForeground },
+                    ]}
+                  >
+                    Relationship Start Date
+                  </Text>
                   <TouchableOpacity
                     onPress={() => setShowDatePicker(true)}
-                    style={styles.datePickerButton}
+                    style={[
+                      styles.datePickerButton,
+                      { backgroundColor: theme.colorSecondary },
+                    ]}
                     activeOpacity={0.8}
                   >
                     <Text
                       style={[
                         styles.datePickerText,
-                        !startDate && styles.datePickerPlaceholder,
+                        { color: theme.colorForeground },
+                        !startDate && {
+                          ...styles.datePickerPlaceholder,
+                          color: theme.colorMutedForeground,
+                        },
                       ]}
                     >
                       {startDate
                         ? startDate.toLocaleDateString()
                         : "Select a date"}
                     </Text>
-                    <CalendarHeart size={16} color="#94A3B8" />
+                    <CalendarHeart
+                      size={16}
+                      color={theme.colorMutedForeground}
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -333,14 +438,36 @@ export function UserLinkPage({
                         activeOpacity={1}
                         onPress={handleCancelDate}
                       />
-                      <View style={styles.datePickerContainer}>
-                        <View style={styles.datePickerHeader}>
+                      <View
+                        style={[
+                          styles.datePickerContainer,
+                          { backgroundColor: theme.colorCard },
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.datePickerHeader,
+                            { borderBottomColor: theme.colorBorder },
+                          ]}
+                        >
                           <TouchableOpacity onPress={handleCancelDate}>
-                            <Text style={styles.datePickerCancelText}>
+                            <Text
+                              style={[
+                                styles.datePickerCancelText,
+                                { color: theme.colorMutedForeground },
+                              ]}
+                            >
                               取消
                             </Text>
                           </TouchableOpacity>
-                          <Text style={styles.datePickerTitle}>选择日期</Text>
+                          <Text
+                            style={[
+                              styles.datePickerTitle,
+                              { color: theme.colorForeground },
+                            ]}
+                          >
+                            选择日期
+                          </Text>
                           <TouchableOpacity onPress={handleConfirmDate}>
                             <Text style={styles.datePickerConfirmText}>
                               确认
@@ -393,7 +520,9 @@ export function UserLinkPage({
           </View>
 
           <View style={styles.footerNote}>
-            <Text style={styles.footerText}>
+            <Text
+              style={[styles.footerText, { color: theme.colorMutedForeground }]}
+            >
               {currentLinkedUser
                 ? "You can unlink anytime to change your partner connection."
                 : "Once linked, you'll be able to share memories and moments with your partner."}
@@ -408,18 +537,15 @@ export function UserLinkPage({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
   },
   content: {
     paddingBottom: 20,
   },
   stickyHeader: {
-    backgroundColor: "#F8FAFC",
     paddingTop: 12,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E2E8F0",
   },
   stickyRow: {
     flexDirection: "row",
@@ -441,7 +567,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
   },
   profileSection: {
     marginHorizontal: 20,
@@ -449,7 +574,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 20,
     paddingVertical: 24,
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     shadowColor: "#000",
     shadowOpacity: 0.05,
@@ -473,19 +597,16 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
     marginBottom: 4,
   },
   profileSlogan: {
     fontSize: 12,
-    color: "#64748B",
   },
   linkSection: {
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   linkCard: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 24,
     shadowColor: "#000",
@@ -502,12 +623,10 @@ const styles = StyleSheet.create({
   linkCardTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
     marginLeft: 8,
   },
   linkDescription: {
     fontSize: 12,
-    color: "#64748B",
     marginBottom: 16,
   },
   linkedBox: {
@@ -515,11 +634,9 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#FED7AA",
   },
   linkedLabel: {
     fontSize: 12,
-    color: "#64748B",
     marginBottom: 12,
   },
   partnerRow: {
@@ -539,12 +656,10 @@ const styles = StyleSheet.create({
   partnerName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
     marginBottom: 2,
   },
   partnerSubtitle: {
     fontSize: 12,
-    color: "#64748B",
   },
   dateInfoRow: {
     flexDirection: "row",
@@ -553,15 +668,12 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     marginTop: 4,
     borderTopWidth: 1,
-    borderTopColor: "rgba(249, 115, 22, 0.2)",
   },
   dateInfoText: {
     fontSize: 12,
-    color: "#64748B",
   },
   dateInfoValue: {
     fontWeight: "600",
-    color: "#111827",
   },
   unlinkButton: {
     width: "100%",
@@ -583,23 +695,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    color: "#64748B",
     marginBottom: 8,
   },
   input: {
     width: "100%",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#F1F5F9",
     borderRadius: 12,
     fontSize: 14,
-    color: "#111827",
   },
   datePickerButton: {
     width: "100%",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#F1F5F9",
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
@@ -607,11 +715,8 @@ const styles = StyleSheet.create({
   },
   datePickerText: {
     fontSize: 14,
-    color: "#111827",
   },
-  datePickerPlaceholder: {
-    color: "#94A3B8",
-  },
+  datePickerPlaceholder: {},
   datePickerModal: {
     flex: 1,
     justifyContent: "center",
@@ -627,7 +732,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   datePickerContainer: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     paddingBottom: 20,
     width: "100%",
@@ -640,16 +744,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
   },
   datePickerTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
   },
   datePickerCancelText: {
     fontSize: 16,
-    color: "#64748B",
   },
   datePickerConfirmText: {
     fontSize: 16,
@@ -680,7 +781,6 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: "#64748B",
     textAlign: "center",
   },
 });

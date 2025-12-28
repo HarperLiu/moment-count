@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import { Image } from "expo-image";
 import { X, Clock } from "lucide-react-native";
+import { useThemeContext } from "../styles/ThemeContext";
 
 export type ReceiptForCard = {
   id: string | number;
@@ -18,6 +19,8 @@ export function ReceiptDetailCard({
   receipt: ReceiptForCard;
   onClose: () => void;
 }) {
+  const { theme } = useThemeContext();
+
   return (
     <Modal
       animationType="fade"
@@ -32,12 +35,22 @@ export function ReceiptDetailCard({
           style={styles.backdrop}
           onPress={onClose}
         />
-        <View style={styles.cardWrapper}>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <X size={18} color="#111827" />
+        <View
+          style={[styles.cardWrapper, { backgroundColor: theme.colorCard }]}
+        >
+          <TouchableOpacity
+            onPress={onClose}
+            style={[
+              styles.closeBtn,
+              { backgroundColor: theme.colorCard + "E6" },
+            ]}
+          >
+            <X size={18} color={theme.colorForeground} />
           </TouchableOpacity>
 
-          <View style={styles.imageBox}>
+          <View
+            style={[styles.imageBox, { backgroundColor: theme.colorMuted }]}
+          >
             <Image
               source={{ uri: receipt.image }}
               style={styles.image}
@@ -49,14 +62,22 @@ export function ReceiptDetailCard({
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.title}>{receipt.name}</Text>
+            <Text style={[styles.title, { color: theme.colorForeground }]}>
+              {receipt.name}
+            </Text>
 
             <View style={styles.timeRow}>
-              <Clock size={14} color="#475569" />
-              <Text style={styles.timeText}>{receipt.timeCost}</Text>
+              <Clock size={14} color={theme.colorMutedForeground} />
+              <Text
+                style={[styles.timeText, { color: theme.colorMutedForeground }]}
+              >
+                {receipt.timeCost}
+              </Text>
             </View>
 
-            <Text style={styles.desc}>{receipt.description}</Text>
+            <Text style={[styles.desc, { color: theme.colorMutedForeground }]}>
+              {receipt.description}
+            </Text>
 
             <View style={styles.actions}>
               <TouchableOpacity onPress={onClose} style={styles.primaryBtn}>
@@ -84,7 +105,6 @@ const styles = StyleSheet.create({
   cardWrapper: {
     width: "100%",
     maxWidth: 360,
-    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     overflow: "hidden",
   },
@@ -96,24 +116,22 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.9)",
     alignItems: "center",
     justifyContent: "center",
   },
-  imageBox: { width: "100%", height: 200, backgroundColor: "#E5E7EB" },
+  imageBox: { width: "100%", height: 200 },
   image: { width: "100%", height: "100%" },
   content: { padding: 16 },
-  title: { fontSize: 18, fontWeight: "700", color: "#0F172A", marginBottom: 8 },
+  title: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6 as any,
     marginBottom: 8,
   },
-  timeText: { fontSize: 13, color: "#475569" },
+  timeText: { fontSize: 13 },
   desc: {
     fontSize: 14,
-    color: "#475569",
     lineHeight: 20,
     marginTop: 4,
     marginBottom: 16,

@@ -13,7 +13,7 @@ import {
 import { Image } from "expo-image";
 import { ArrowLeft, Plus, Clock } from "lucide-react-native";
 import { api } from "../app/api";
-import { useTheme } from "../styles/useTheme";
+import { useThemeContext } from "../styles/ThemeContext";
 import { ReceiptDetailCard } from "./ReceiptDetailCard";
 
 type Receipt = {
@@ -32,17 +32,31 @@ function formatTimeCost(hours: number, minutes: number): string {
   return `${hours} h ${minutes} min`;
 }
 
-function ReceiptCard({ receipt }: { receipt: Receipt }) {
+function ReceiptCard({ receipt, theme }: { receipt: Receipt; theme: any }) {
   return (
-    <View style={[styles.row, styles.rowBorder]}>
+    <View
+      style={[
+        styles.row,
+        styles.rowBorder,
+        { borderBottomColor: theme.colorBorder },
+      ]}
+    >
       <View style={styles.flex1}>
-        <Text style={styles.name}>{receipt.name}</Text>
-        <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
+        <Text style={[styles.name, { color: theme.colorForeground }]}>
+          {receipt.name}
+        </Text>
+        <Text
+          style={[styles.desc, { color: theme.colorMutedForeground }]}
+          numberOfLines={3}
+          ellipsizeMode="tail"
+        >
           {receipt.description}
         </Text>
         <View style={styles.timeRow}>
-          <Clock size={14} color="#111827" />
-          <Text style={styles.timeText}>{receipt.timeCost}</Text>
+          <Clock size={14} color={theme.colorForeground} />
+          <Text style={[styles.timeText, { color: theme.colorForeground }]}>
+            {receipt.timeCost}
+          </Text>
         </View>
       </View>
       <View>
@@ -66,7 +80,7 @@ export function CookingReceiptListPage({
   onBack: () => void;
   onAddReceipt: () => void;
 }) {
-  const theme = useTheme();
+  const { theme } = useThemeContext();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -171,7 +185,7 @@ export function CookingReceiptListPage({
                     }}
                   >
                     <Pressable onPress={() => setSelected(item)}>
-                      <ReceiptCard receipt={item} />
+                      <ReceiptCard receipt={item} theme={theme} />
                     </Pressable>
                   </View>
                 )}
@@ -214,14 +228,12 @@ export function CookingReceiptListPage({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F8FAFC" },
+  screen: { flex: 1 },
   stickyHeader: {
-    backgroundColor: "#F8FAFC",
     paddingTop: 12,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E2E8F0",
   },
   stickyRow: {
     flexDirection: "row",
@@ -240,7 +252,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
   },
   feed: { paddingHorizontal: 20, paddingVertical: 16 },
 
@@ -248,22 +259,20 @@ const styles = StyleSheet.create({
   rowBorder: {
     paddingBottom: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#F1F5F9",
   },
   flex1: { flex: 1, minHeight: 96, justifyContent: "space-between" },
-  name: { marginBottom: 4, fontSize: 16, fontWeight: "700", color: "#111827" },
-  desc: { fontSize: 13, color: "#6B7280", marginBottom: 8, marginRight: 4 },
+  name: { marginBottom: 4, fontSize: 16, fontWeight: "700" },
+  desc: { fontSize: 13, marginBottom: 8, marginRight: 4 },
   timeRow: { flexDirection: "row", alignItems: "center" },
-  timeText: { marginLeft: 4, fontSize: 13, color: "#111827" },
+  timeText: { marginLeft: 4, fontSize: 13 },
   cover: { width: 96, height: 96, borderRadius: 16 },
 
   endRow: { flexDirection: "row", alignItems: "center", marginVertical: 12 },
   endLine: {
     flex: 1,
     height: StyleSheet.hairlineWidth,
-    backgroundColor: "#E5E7EB",
   },
-  endText: { fontSize: 13, color: "#94A3B8", marginHorizontal: 12 },
+  endText: { fontSize: 13, marginHorizontal: 12 },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
@@ -273,7 +282,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: "#6B7280",
     fontWeight: "500",
   },
   errorContainer: {

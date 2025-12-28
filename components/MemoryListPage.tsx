@@ -12,6 +12,7 @@ import { Image } from "expo-image";
 import { ArrowLeft, Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { MemoryDetailCard } from "./MemoryDetailCard";
+import { useThemeContext } from "../styles/ThemeContext";
 
 type MemoryPhoto = { url: string; alt: string };
 type MemoryEntry = {
@@ -41,18 +42,26 @@ function HeadlineAndDetails({
   headline,
   details,
   date,
+  theme,
 }: {
   headline: string;
   details: string;
   date: string;
+  theme: any;
 }) {
   return (
     <View style={{ gap: 6 }}>
       <View style={styles.headlineRow}>
-        <Text style={styles.cardTitle}>{headline}</Text>
-        <Text style={styles.cardDate}>{formatDate(date)}</Text>
+        <Text style={[styles.cardTitle, { color: theme.colorForeground }]}>
+          {headline}
+        </Text>
+        <Text style={[styles.cardDate, { color: theme.colorMutedForeground }]}>
+          {formatDate(date)}
+        </Text>
       </View>
-      <Text style={styles.cardDetails}>{details}</Text>
+      <Text style={[styles.cardDetails, { color: theme.colorMutedForeground }]}>
+        {details}
+      </Text>
     </View>
   );
 }
@@ -91,18 +100,26 @@ function MemoryCard({
   memory,
   onPress,
   onPhotoPress,
+  theme,
 }: {
   memory: MemoryEntry;
   onPress: () => void;
   onPhotoPress?: (index: number) => void;
+  theme: any;
 }) {
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: theme.colorCard, borderColor: theme.colorBorder },
+      ]}
+    >
       <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
         <HeadlineAndDetails
           headline={memory.headline}
           details={memory.details}
           date={memory.date}
+          theme={theme}
         />
       </TouchableOpacity>
       <PhotoGrid photos={memory.photos} onPhotoPress={onPhotoPress} />
@@ -117,6 +134,7 @@ export function MemoryListPage({
   onBack: () => void;
   onAddMemory: () => void;
 }) {
+  const { theme } = useThemeContext();
   const [memories, setMemories] = useState<MemoryEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,18 +185,32 @@ export function MemoryListPage({
   }, []);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
+    >
       <ScrollView stickyHeaderIndices={[0]}>
-        <View style={styles.stickyHeader}>
+        <View
+          style={[
+            styles.stickyHeader,
+            {
+              backgroundColor: theme.colorBackground,
+              borderBottomColor: theme.colorBorder,
+            },
+          ]}
+        >
           <View style={styles.stickyRow}>
             <View style={styles.leftGroup}>
               <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color="#111827" />
+                <ArrowLeft size={20} color={theme.colorForeground} />
               </TouchableOpacity>
-              <Text style={styles.pageTitle}>Memory</Text>
+              <Text
+                style={[styles.pageTitle, { color: theme.colorForeground }]}
+              >
+                Memory
+              </Text>
             </View>
             <TouchableOpacity onPress={onAddMemory} style={styles.iconBtn}>
-              <Plus size={20} color="#111827" />
+              <Plus size={20} color={theme.colorForeground} />
             </TouchableOpacity>
           </View>
         </View>
@@ -187,7 +219,14 @@ export function MemoryListPage({
           {loading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#F97316" />
-              <Text style={styles.loadingText}>Loading memories...</Text>
+              <Text
+                style={[
+                  styles.loadingText,
+                  { color: theme.colorMutedForeground },
+                ]}
+              >
+                Loading memories...
+              </Text>
             </View>
           )}
           {!!error && (
@@ -209,6 +248,7 @@ export function MemoryListPage({
                       setSelected(m);
                       setSelectedImageIndex(index);
                     }}
+                    theme={theme}
                   />
                 </View>
               ))}
@@ -220,9 +260,26 @@ export function MemoryListPage({
                 />
               )}
               <View style={styles.endRow}>
-                <View style={styles.endLine} />
-                <Text style={styles.endText}>More is coming</Text>
-                <View style={styles.endLine} />
+                <View
+                  style={[
+                    styles.endLine,
+                    { backgroundColor: theme.colorBorder },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.endText,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
+                  More is coming
+                </Text>
+                <View
+                  style={[
+                    styles.endLine,
+                    { backgroundColor: theme.colorBorder },
+                  ]}
+                />
               </View>
             </>
           )}
@@ -233,14 +290,12 @@ export function MemoryListPage({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F8FAFC" },
+  screen: { flex: 1 },
   stickyHeader: {
-    backgroundColor: "#F8FAFC",
     paddingTop: 12,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E2E8F0",
   },
   stickyRow: {
     flexDirection: "row",
@@ -259,16 +314,13 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
   },
   feed: { paddingHorizontal: 20, paddingVertical: 16 },
 
   card: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 20,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#E5E7EB",
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -281,9 +333,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  cardTitle: { fontSize: 16, fontWeight: "700", color: "#111827" },
-  cardDate: { fontSize: 12, color: "#94A3B8" },
-  cardDetails: { fontSize: 14, color: "#475569", lineHeight: 20 },
+  cardTitle: { fontSize: 16, fontWeight: "700" },
+  cardDate: { fontSize: 12 },
+  cardDetails: { fontSize: 14, lineHeight: 20 },
 
   grid2: { flexDirection: "row", flexWrap: "wrap", gap: 12 as any },
   gridItem: { width: "48%", borderRadius: 12, overflow: "hidden" },
@@ -298,9 +350,8 @@ const styles = StyleSheet.create({
   endLine: {
     flex: 1,
     height: StyleSheet.hairlineWidth,
-    backgroundColor: "#E5E7EB",
   },
-  endText: { fontSize: 13, color: "#94A3B8" },
+  endText: { fontSize: 13 },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
@@ -310,7 +361,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: "#6B7280",
     fontWeight: "500",
   },
   errorContainer: {

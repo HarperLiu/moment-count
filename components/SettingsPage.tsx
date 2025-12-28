@@ -17,6 +17,7 @@ import {
   LogOut,
 } from "lucide-react-native";
 import { Image } from "expo-image";
+import { useThemeContext } from "../styles/ThemeContext";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -24,6 +25,7 @@ interface SettingsPageProps {
   onNavigateToUserLink?: () => void;
   onNavigateToEditProfile?: () => void;
   onNavigateToAbout?: () => void;
+  onNavigateToAppearance?: () => void;
 }
 
 type SettingsItem = {
@@ -39,7 +41,9 @@ export function SettingsPage({
   onNavigateToUserLink,
   onNavigateToEditProfile,
   onNavigateToAbout,
+  onNavigateToAppearance,
 }: SettingsPageProps) {
+  const { theme } = useThemeContext();
   const [name, setName] = useState<string>("");
   const [slogan, setSlogan] = useState<string>("");
   const [avatar, setAvatar] = useState<string>("");
@@ -80,7 +84,7 @@ export function SettingsPage({
       icon: Palette,
       label: "Appearance",
       description: "Customize app theme and display",
-      onClick: undefined,
+      onClick: onNavigateToAppearance,
     },
     {
       icon: Info,
@@ -93,25 +97,41 @@ export function SettingsPage({
   const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorSecondary }]}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* Sticky Header */}
-        <View style={styles.stickyHeader}>
+        <View
+          style={[
+            styles.stickyHeader,
+            {
+              backgroundColor: theme.colorSecondary,
+              borderBottomColor: theme.colorBorder,
+            },
+          ]}
+        >
           <View style={styles.stickyRow}>
             <View style={styles.leftGroup}>
               <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color="#111827" />
+                <ArrowLeft size={20} color={theme.colorForeground} />
               </TouchableOpacity>
-              <Text style={styles.pageTitle}>Settings</Text>
+              <Text
+                style={[styles.pageTitle, { color: theme.colorForeground }]}
+              >
+                Settings
+              </Text>
             </View>
           </View>
         </View>
 
         {/* Profile Section */}
-        <View style={styles.profileSection}>
+        <View
+          style={[styles.profileSection, { backgroundColor: theme.colorCard }]}
+        >
           <View style={styles.profileRow}>
             <Image
               source={avatarSource}
@@ -121,15 +141,30 @@ export function SettingsPage({
               cachePolicy="memory-disk"
             />
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{name || "User"}</Text>
-              {!!slogan && <Text style={styles.profileSlogan}>{slogan}</Text>}
+              <Text
+                style={[styles.profileName, { color: theme.colorForeground }]}
+              >
+                {name || "User"}
+              </Text>
+              {!!slogan && (
+                <Text
+                  style={[
+                    styles.profileSlogan,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
+                  {slogan}
+                </Text>
+              )}
             </View>
           </View>
         </View>
 
         {/* Settings List */}
         <View style={styles.settingsContainer}>
-          <View style={styles.settingsList}>
+          <View
+            style={[styles.settingsList, { backgroundColor: theme.colorCard }]}
+          >
             {settingsItems.map((item, index) => {
               const Icon = item.icon;
               return (
@@ -137,8 +172,10 @@ export function SettingsPage({
                   key={index}
                   style={[
                     styles.settingsItem,
-                    index !== settingsItems.length - 1 &&
-                      styles.settingsItemBorder,
+                    index !== settingsItems.length - 1 && {
+                      ...styles.settingsItemBorder,
+                      borderBottomColor: theme.colorBorder,
+                    },
                   ]}
                   activeOpacity={0.7}
                   onPress={item.onClick}
@@ -148,12 +185,24 @@ export function SettingsPage({
                     <Icon size={20} color="#F97316" />
                   </View>
                   <View style={styles.itemContent}>
-                    <Text style={styles.itemLabel}>{item.label}</Text>
-                    <Text style={styles.itemDescription}>
+                    <Text
+                      style={[
+                        styles.itemLabel,
+                        { color: theme.colorForeground },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.itemDescription,
+                        { color: theme.colorMutedForeground },
+                      ]}
+                    >
                       {item.description}
                     </Text>
                   </View>
-                  <ChevronRight size={20} color="#CBD5E1" />
+                  <ChevronRight size={20} color={theme.colorMutedForeground} />
                 </TouchableOpacity>
               );
             })}
@@ -162,7 +211,14 @@ export function SettingsPage({
           {/* Logout Button */}
           <TouchableOpacity
             onPress={onLogout}
-            style={styles.logoutBtn}
+            style={[
+              styles.logoutBtn,
+              {
+                backgroundColor: theme.colorCard,
+                borderColor: "#EF4444",
+                borderWidth: 1,
+              },
+            ]}
             activeOpacity={0.7}
           >
             <LogOut size={20} color="#EF4444" />
@@ -177,18 +233,15 @@ export function SettingsPage({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
   },
   content: {
     paddingBottom: 20,
   },
   stickyHeader: {
-    backgroundColor: "#F8FAFC",
     paddingTop: 12,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E2E8F0",
   },
   stickyRow: {
     flexDirection: "row",
@@ -210,7 +263,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
   },
   profileSection: {
     marginHorizontal: 20,
@@ -218,7 +270,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 20,
     paddingVertical: 24,
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     shadowColor: "#000",
     shadowOpacity: 0.05,
@@ -242,19 +293,16 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
     marginBottom: 4,
   },
   profileSlogan: {
     fontSize: 12,
-    color: "#64748B",
   },
   settingsContainer: {
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   settingsList: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     overflow: "hidden",
     shadowColor: "#000",
@@ -271,7 +319,6 @@ const styles = StyleSheet.create({
   },
   settingsItemBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#F1F5F9",
   },
   iconContainer: {
     padding: 8,
@@ -285,19 +332,16 @@ const styles = StyleSheet.create({
   itemLabel: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#111827",
     marginBottom: 2,
   },
   itemDescription: {
     fontSize: 12,
-    color: "#64748B",
   },
   logoutBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     marginTop: 16,
     shadowColor: "#000",

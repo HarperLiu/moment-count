@@ -23,6 +23,7 @@ import {
   Calendar as CalendarIcon,
   X,
 } from "lucide-react-native";
+import { useThemeContext } from "../styles/ThemeContext";
 
 // Format date to yyyy-mm-dd
 function formatDate(date: Date): string {
@@ -44,6 +45,7 @@ export function AddMemoryPage({
     date: Date;
   }) => void;
 }) {
+  const { theme } = useThemeContext();
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
@@ -134,35 +136,58 @@ export function AddMemoryPage({
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-            <ArrowLeft size={20} color="#111827" />
+            <ArrowLeft size={20} color={theme.colorForeground} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Memory</Text>
+          <Text style={[styles.headerTitle, { color: theme.colorForeground }]}>
+            New Memory
+          </Text>
           <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Title</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Title
+          </Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
             placeholder="Give your memory a title..."
-            style={styles.input}
-            placeholderTextColor="#94A3B8"
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.colorCard,
+                borderColor: theme.colorBorder,
+                color: theme.colorForeground,
+              },
+            ]}
+            placeholderTextColor={theme.colorMutedForeground}
           />
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Date</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Date
+          </Text>
           <TouchableOpacity
-            style={styles.inputRow}
+            style={[
+              styles.inputRow,
+              {
+                backgroundColor: theme.colorCard,
+                borderColor: theme.colorBorder,
+              },
+            ]}
             onPress={() => setShowPicker(true)}
           >
-            <Text style={styles.inputText}>{formatDate(date)}</Text>
-            <CalendarIcon size={16} color="#94A3B8" />
+            <Text style={[styles.inputText, { color: theme.colorForeground }]}>
+              {formatDate(date)}
+            </Text>
+            <CalendarIcon size={16} color={theme.colorMutedForeground} />
           </TouchableOpacity>
 
           {Platform.OS === "ios" && (
@@ -178,12 +203,36 @@ export function AddMemoryPage({
                   activeOpacity={1}
                   onPress={handleCancelDate}
                 />
-                <View style={styles.datePickerContainer}>
-                  <View style={styles.datePickerHeader}>
+                <View
+                  style={[
+                    styles.datePickerContainer,
+                    { backgroundColor: theme.colorCard },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.datePickerHeader,
+                      { borderBottomColor: theme.colorBorder },
+                    ]}
+                  >
                     <TouchableOpacity onPress={handleCancelDate}>
-                      <Text style={styles.datePickerCancelText}>取消</Text>
+                      <Text
+                        style={[
+                          styles.datePickerCancelText,
+                          { color: theme.colorMutedForeground },
+                        ]}
+                      >
+                        取消
+                      </Text>
                     </TouchableOpacity>
-                    <Text style={styles.datePickerTitle}>选择日期</Text>
+                    <Text
+                      style={[
+                        styles.datePickerTitle,
+                        { color: theme.colorForeground },
+                      ]}
+                    >
+                      选择日期
+                    </Text>
                     <TouchableOpacity onPress={handleConfirmDate}>
                       <Text style={styles.datePickerConfirmText}>确认</Text>
                     </TouchableOpacity>
@@ -212,19 +261,32 @@ export function AddMemoryPage({
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Details</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Details
+          </Text>
           <TextInput
             value={details}
             onChangeText={setDetails}
             placeholder="Write about this special moment..."
-            style={[styles.input, { height: 120, textAlignVertical: "top" }]}
-            placeholderTextColor="#94A3B8"
+            style={[
+              styles.input,
+              {
+                height: 120,
+                textAlignVertical: "top",
+                backgroundColor: theme.colorCard,
+                borderColor: theme.colorBorder,
+                color: theme.colorForeground,
+              },
+            ]}
+            placeholderTextColor={theme.colorMutedForeground}
             multiline
           />
         </View>
 
         <View style={styles.fieldBlock}>
-          <Text style={styles.label}>Photos</Text>
+          <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
+            Photos
+          </Text>
           {photos.length > 0 && (
             <ScrollView
               horizontal
@@ -258,13 +320,26 @@ export function AddMemoryPage({
               </View>
             </ScrollView>
           )}
-          <TouchableOpacity style={styles.uploadBox} onPress={handlePickImages}>
-            <ImageIcon size={28} color="#94A3B8" />
-            <Text style={styles.uploadText}>Tap to add photos</Text>
+          <TouchableOpacity
+            style={[
+              styles.uploadBox,
+              {
+                borderColor: theme.colorBorder,
+                backgroundColor: theme.colorSecondary,
+              },
+            ]}
+            onPress={handlePickImages}
+          >
+            <ImageIcon size={28} color={theme.colorMutedForeground} />
+            <Text
+              style={[styles.uploadText, { color: theme.colorMutedForeground }]}
+            >
+              Tap to add photos
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.hint}>
+        <Text style={[styles.hint, { color: theme.colorMutedForeground }]}>
           Capture and preserve your special moments together
         </Text>
 
@@ -292,7 +367,7 @@ export function AddMemoryPage({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F8FAFC" },
+  screen: { flex: 1 },
   content: { padding: 16 },
   headerRow: {
     flexDirection: "row",
@@ -307,23 +382,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
+  headerTitle: { fontSize: 18, fontWeight: "700" },
   fieldBlock: { marginTop: 12 },
-  label: { fontSize: 12, color: "#64748B", marginBottom: 6 },
+  label: { fontSize: 12, marginBottom: 6 },
   input: {
-    backgroundColor: "#FFFFFF",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#E2E8F0",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: "#0F172A",
     fontSize: 14,
   },
   inputRow: {
-    backgroundColor: "#FFFFFF",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#E2E8F0",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -331,19 +401,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  inputText: { fontSize: 14, color: "#0F172A" },
+  inputText: { fontSize: 14 },
   uploadBox: {
     height: 96,
     borderWidth: 2,
     borderStyle: "dashed",
-    borderColor: "#CBD5E1",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFF7ED33",
     gap: 4 as any,
   },
-  uploadText: { fontSize: 13, color: "#64748B" },
+  uploadText: { fontSize: 13 },
   thumbBox: {
     width: 80,
     height: 80,
@@ -364,7 +432,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  hint: { marginTop: 8, fontSize: 12, color: "#94A3B8", textAlign: "center" },
+  hint: { marginTop: 8, fontSize: 12, textAlign: "center" },
   saveBtn: {
     marginTop: 12,
     backgroundColor: "#F97316",
@@ -388,7 +456,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   datePickerContainer: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     paddingBottom: 20,
     width: "100%",
@@ -401,16 +468,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
   },
   datePickerTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
   },
   datePickerCancelText: {
     fontSize: 16,
-    color: "#64748B",
   },
   datePickerConfirmText: {
     fontSize: 16,

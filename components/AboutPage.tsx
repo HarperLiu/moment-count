@@ -9,12 +9,14 @@ import {
 } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
 import { WebView } from "react-native-webview";
+import { useThemeContext } from "../styles/ThemeContext";
 
 interface AboutPageProps {
   onBack: () => void;
 }
 
 export function AboutPage({ onBack }: AboutPageProps) {
+  const { theme } = useThemeContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -153,19 +155,31 @@ export function AboutPage({ onBack }: AboutPageProps) {
   `;
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: theme.colorBackground,
+            borderBottomColor: theme.colorBorder,
+          },
+        ]}
+      >
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-            <ArrowLeft size={20} color="#111827" />
+            <ArrowLeft size={20} color={theme.colorForeground} />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>About</Text>
+          <Text style={[styles.pageTitle, { color: theme.colorForeground }]}>
+            About
+          </Text>
         </View>
       </View>
 
       {/* PDF Viewer */}
-      <View style={styles.pdfContainer}>
+      <View style={[styles.pdfContainer, { backgroundColor: theme.colorCard }]}>
         <WebView
           source={{ html: htmlContent }}
           style={styles.webview}
@@ -176,9 +190,21 @@ export function AboutPage({ onBack }: AboutPageProps) {
           showsHorizontalScrollIndicator={false}
           startInLoadingState={true}
           renderLoading={() => (
-            <View style={styles.centerContent}>
+            <View
+              style={[
+                styles.centerContent,
+                { backgroundColor: theme.colorCard },
+              ]}
+            >
               <ActivityIndicator size="large" color="#F97316" />
-              <Text style={styles.loadingText}>加载 PDF 中...</Text>
+              <Text
+                style={[
+                  styles.loadingText,
+                  { color: theme.colorMutedForeground },
+                ]}
+              >
+                加载 PDF 中...
+              </Text>
             </View>
           )}
           onError={(syntheticEvent) => {
@@ -196,15 +222,12 @@ export function AboutPage({ onBack }: AboutPageProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
   },
   header: {
-    backgroundColor: "#F8FAFC",
     paddingTop: 12,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E2E8F0",
   },
   headerRow: {
     flexDirection: "row",
@@ -221,11 +244,9 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
   },
   pdfContainer: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   webview: {
     flex: 1,
@@ -235,12 +256,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: "#64748B",
   },
   errorText: {
     fontSize: 14,
