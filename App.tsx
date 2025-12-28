@@ -26,6 +26,7 @@ import { UserInfo } from "./components/UserInfo";
 import { SettingsPage } from "./components/SettingsPage";
 import { UserLinkPage } from "./components/UserLinkPage";
 import { EditProfilePage } from "./components/EditProfilePage";
+import { AboutPage } from "./components/AboutPage";
 import { useTheme } from "./styles/useTheme";
 
 type PageKey =
@@ -40,7 +41,8 @@ type PageKey =
   | "add-receipt"
   | "settings"
   | "user-link"
-  | "edit-profile";
+  | "edit-profile"
+  | "about";
 
 export default function App() {
   const theme = useTheme();
@@ -374,8 +376,13 @@ export default function App() {
         onLogout={handleClearCache}
         onNavigateToUserLink={() => setCurrentPage("user-link")}
         onNavigateToEditProfile={() => setCurrentPage("edit-profile")}
+        onNavigateToAbout={() => setCurrentPage("about")}
       />
     );
+  }
+
+  if (currentPage === "about") {
+    return <AboutPage onBack={() => setCurrentPage("settings")} />;
   }
 
   if (currentPage === "edit-profile") {

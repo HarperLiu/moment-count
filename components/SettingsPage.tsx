@@ -23,6 +23,7 @@ interface SettingsPageProps {
   onLogout: () => void;
   onNavigateToUserLink?: () => void;
   onNavigateToEditProfile?: () => void;
+  onNavigateToAbout?: () => void;
 }
 
 type SettingsItem = {
@@ -37,6 +38,7 @@ export function SettingsPage({
   onLogout,
   onNavigateToUserLink,
   onNavigateToEditProfile,
+  onNavigateToAbout,
 }: SettingsPageProps) {
   const [name, setName] = useState<string>("");
   const [slogan, setSlogan] = useState<string>("");
@@ -84,7 +86,7 @@ export function SettingsPage({
       icon: Info,
       label: "About",
       description: "App version and information",
-      onClick: undefined,
+      onClick: onNavigateToAbout,
     },
   ];
 
