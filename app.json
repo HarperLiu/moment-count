@@ -13,7 +13,7 @@
       "backgroundColor": "#F5DEB3"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.harperliu.momentcount",
       "buildNumber": "2",
       "infoPlist": {
