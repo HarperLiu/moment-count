@@ -217,6 +217,7 @@ const styles = StyleSheet.create({
   cardRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
   cardCol: {
     marginLeft: 8,
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 11,
     marginTop: 4,
-    textAlign: "left",
+    textAlign: "center",
   },
   weatherDescription: {
     fontSize: 11,

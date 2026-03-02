@@ -292,20 +292,23 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     gap: 12 as any,
-    borderWidth: 2,
+    borderWidth: 1,
     borderStyle: "dashed",
   },
   emptyTextContainer: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
   },
   emptyTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "700",
-    marginBottom: 4,
+    marginBottom: 8,
+    textAlign: "center",
   },
   emptyDescription: {
-    fontSize: 13,
+    fontSize: 12,
+    textAlign: "center",
   },
   emptyImagePlaceholder: {
     width: 96,
