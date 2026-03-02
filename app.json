@@ -18,7 +18,9 @@
       "buildNumber": "4",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIDeviceFamily": [1]
+        "UIDeviceFamily": [1],
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to let you select and upload photos for your memories and cooking recipes. For example, you can add photos of special moments with your partner or pictures of dishes you've cooked together.",
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to display local weather information and show your position on the map. For example, you and your partner can see each other's locations to know how far apart you are."
       }
     },
     "android": {
