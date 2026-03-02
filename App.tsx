@@ -207,6 +207,28 @@ function AppContent() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const AsyncStorage = require("@react-native-async-storage/async-storage")
+      .default as {
+      getItem: (k: string) => Promise<string | null>;
+      removeItem: (k: string) => Promise<void>;
+    };
+    const uuid = await AsyncStorage.getItem("user:uuid");
+    if (!uuid) {
+      throw new Error("User not found");
+    }
+    await api.deleteAccount({ uuid });
+    // Clear all local data after successful deletion
+    await AsyncStorage.removeItem("user:uuid");
+    await AsyncStorage.removeItem("user:profile");
+    await AsyncStorage.removeItem("user:loginAt");
+    await AsyncStorage.removeItem("user:linkedUser");
+    await AsyncStorage.removeItem("user:linkId");
+    setLinkedUser(null);
+    setRelationshipStartDate(null);
+    setCurrentPage("welcome");
+  };
+
   const handleUpdateLink = async (
     username: string | null,
     startDate?: Date | null,
@@ -384,6 +406,7 @@ function AppContent() {
       <SettingsPage
         onBack={() => setCurrentPage("home")}
         onLogout={handleClearCache}
+        onDeleteAccount={handleDeleteAccount}
         onNavigateToUserLink={() => setCurrentPage("user-link")}
         onNavigateToEditProfile={() => setCurrentPage("edit-profile")}
         onNavigateToAbout={() => setCurrentPage("about")}

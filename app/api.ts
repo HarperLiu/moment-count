@@ -207,6 +207,12 @@ export const api = {
       body: payload,
     }).then((r) => r.data),
 
+  deleteAccount: (payload: { uuid: string }): Promise<void> =>
+    http<void>("/auth/delete-account", {
+      method: "DELETE",
+      body: payload,
+    }),
+
   // Upload base64 image and return public URL
   uploadBase64Image: (payload: {
     filename: string;
