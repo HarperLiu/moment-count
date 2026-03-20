@@ -29,6 +29,7 @@ import { EditProfilePage } from "./components/EditProfilePage";
 import { AboutPage } from "./components/AboutPage";
 import { AppearancePage } from "./components/AppearancePage";
 import { ThemeProvider, useThemeContext } from "./styles/ThemeContext";
+import { LanguageProvider, useLanguageContext } from "./styles/LanguageContext";
 
 type PageKey =
   | "welcome"
@@ -48,14 +49,17 @@ type PageKey =
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 
 function AppContent() {
   const { theme, isDark, setThemeMode } = useThemeContext();
+  const { t } = useLanguageContext();
   const [currentPage, setCurrentPage] = useState<PageKey>("welcome");
   const [bootstrapped, setBootstrapped] = useState(false);
   const [linkedUser, setLinkedUser] = useState<string | null>(null);
@@ -536,7 +540,7 @@ function AppContent() {
               <Text
                 style={[styles.sectionTitle, { color: theme.colorForeground }]}
               >
-                Memory
+                {t("memory.title")}
               </Text>
               {hasMemories && (
                 <TouchableOpacity onPress={() => setCurrentPage("memories")}>
@@ -546,7 +550,7 @@ function AppContent() {
                       { color: theme.colorMutedForeground },
                     ]}
                   >
-                    See more
+                    {t("memory.seeMore")}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -566,7 +570,7 @@ function AppContent() {
               <Text
                 style={[styles.sectionTitle, { color: theme.colorForeground }]}
               >
-                Cooking Receipt
+                {t("receipt.title")}
               </Text>
               {hasReceipts && (
                 <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
@@ -576,7 +580,7 @@ function AppContent() {
                       { color: theme.colorMutedForeground },
                     ]}
                   >
-                    See more
+                    {t("receipt.seeMore")}
                   </Text>
                 </TouchableOpacity>
               )}

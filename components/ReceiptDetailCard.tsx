@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import { Image } from "expo-image";
 import { X, Clock } from "lucide-react-native";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 export type ReceiptForCard = {
   id: string | number;
@@ -20,6 +21,7 @@ export function ReceiptDetailCard({
   onClose: () => void;
 }) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
 
   return (
     <Modal
@@ -81,7 +83,7 @@ export function ReceiptDetailCard({
 
             <View style={styles.actions}>
               <TouchableOpacity onPress={onClose} style={styles.primaryBtn}>
-                <Text style={styles.primaryBtnText}>Close</Text>
+                <Text style={styles.primaryBtnText}>{t("common.close")}</Text>
               </TouchableOpacity>
             </View>
           </View>

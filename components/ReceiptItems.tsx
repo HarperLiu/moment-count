@@ -13,6 +13,7 @@ import { Clock, Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { ReceiptDetailCard } from "./ReceiptDetailCard";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 type Receipt = {
   id: string;
@@ -87,6 +88,7 @@ function SkeletonBox({
 
 export function ReceiptItems({ onAddReceipt, onDataLoad }: ReceiptItemsProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -242,7 +244,7 @@ export function ReceiptItems({ onAddReceipt, onDataLoad }: ReceiptItemsProps) {
         >
           <View style={styles.emptyTextContainer}>
             <Text style={[styles.emptyTitle, { color: theme.colorForeground }]}>
-              Add your first receipt
+              {t("receipt.empty")}
             </Text>
             <Text
               style={[
@@ -250,7 +252,7 @@ export function ReceiptItems({ onAddReceipt, onDataLoad }: ReceiptItemsProps) {
                 { color: theme.colorMutedForeground },
               ]}
             >
-              Start building your receipt collection
+              {t("receipt.emptyDesc")}
             </Text>
           </View>
           <View

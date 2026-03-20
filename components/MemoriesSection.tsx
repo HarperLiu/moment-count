@@ -13,6 +13,7 @@ import { Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { MemoryDetailCard, MemoryDetail } from "./MemoryDetailCard";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 type Memory = MemoryDetail & { image: string };
 
 interface MemoriesSectionProps {
@@ -90,6 +91,7 @@ export function MemoriesSection({
   onDataLoad,
 }: MemoriesSectionProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -201,7 +203,7 @@ export function MemoriesSection({
                 <Text
                   style={[styles.emptyTitle, { color: theme.colorForeground }]}
                 >
-                  Add your memory
+                  {t("memory.empty")}
                 </Text>
                 <Text
                   style={[
@@ -209,7 +211,7 @@ export function MemoriesSection({
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  Capture special moments
+                  {t("memory.emptyDesc")}
                 </Text>
               </View>
             </TouchableOpacity>

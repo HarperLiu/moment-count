@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { Link } from "lucide-react-native";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface UserInfoProps {
   linkedUser?: string | null;
@@ -11,6 +12,7 @@ interface UserInfoProps {
 
 export function UserInfo({ linkedUser, onLinkClick }: UserInfoProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [name, setName] = useState<string>("");
   const [slogan, setSlogan] = useState<string>("");
   const [avatar, setAvatar] = useState<string>("");
@@ -63,7 +65,7 @@ export function UserInfo({ linkedUser, onLinkClick }: UserInfoProps) {
             <Text
               style={[styles.linkText, { color: theme.colorMutedForeground }]}
             >
-              Linked with {linkedUser}
+              {t("userInfo.linkedWith")} {linkedUser}
             </Text>
           </View>
         ) : (
@@ -73,7 +75,7 @@ export function UserInfo({ linkedUser, onLinkClick }: UserInfoProps) {
             activeOpacity={0.7}
           >
             <Link size={14} color="#3B82F6" />
-            <Text style={styles.linkButtonText}>Tap to link with the one</Text>
+            <Text style={styles.linkButtonText}>{t("userInfo.tapToLink")}</Text>
           </TouchableOpacity>
         )}
       </View>

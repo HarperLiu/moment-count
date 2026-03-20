@@ -13,6 +13,7 @@ import { ArrowLeft, Plus } from "lucide-react-native";
 import { api } from "../app/api";
 import { MemoryDetailCard } from "./MemoryDetailCard";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 type MemoryPhoto = { url: string; alt: string };
 type MemoryEntry = {
@@ -135,6 +136,7 @@ export function MemoryListPage({
   onAddMemory: () => void;
 }) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [memories, setMemories] = useState<MemoryEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,7 +208,7 @@ export function MemoryListPage({
               <Text
                 style={[styles.pageTitle, { color: theme.colorForeground }]}
               >
-                Memory
+                {t("memory.title")}
               </Text>
             </View>
             <TouchableOpacity onPress={onAddMemory} style={styles.iconBtn}>
@@ -225,7 +227,7 @@ export function MemoryListPage({
                   { color: theme.colorMutedForeground },
                 ]}
               >
-                Loading memories...
+                {t("memory.loadingText")}
               </Text>
             </View>
           )}
@@ -272,7 +274,7 @@ export function MemoryListPage({
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  More is coming
+                  {t("common.moreIsComing")}
                 </Text>
                 <View
                   style={[

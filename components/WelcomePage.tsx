@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { StatusBar } from "./StatusBar";
 import { useTheme } from "../styles/useTheme";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface WelcomePageProps {
   onGetStarted: () => void;
@@ -10,6 +11,7 @@ interface WelcomePageProps {
 
 export function WelcomePage({ onGetStarted, onLogIn }: WelcomePageProps) {
   const theme = useTheme();
+  const { t } = useLanguageContext();
 
   return (
     <View style={[styles.container, { backgroundColor: "#F1F5F9" }]}>
@@ -34,12 +36,12 @@ export function WelcomePage({ onGetStarted, onLogIn }: WelcomePageProps) {
 
           {/* Welcome Text */}
           <Text style={[styles.headline, { color: "#F97316" }]}>
-            Welcome To MomentCount
+            {t("welcome.title")}
           </Text>
           <Text
             style={[styles.subtitle, { color: theme.colorMutedForeground }]}
           >
-            Create an account and access thousand of cool stuffs
+            {t("welcome.subtitle")}
           </Text>
 
           {/* Get Started Button */}
@@ -47,17 +49,17 @@ export function WelcomePage({ onGetStarted, onLogIn }: WelcomePageProps) {
             onPress={onGetStarted}
             style={[styles.getStartedBtn, { backgroundColor: "#F97316" }]}
           >
-            <Text style={styles.getStartedText}>Get Started</Text>
+            <Text style={styles.getStartedText}>{t("welcome.getStarted")}</Text>
           </TouchableOpacity>
 
           {/* Login Link */}
           <View style={styles.loginContainer}>
             <Text style={[styles.loginText, { color: theme.colorForeground }]}>
-              Already have an account ?{" "}
+              {t("welcome.alreadyHaveAccount")}
             </Text>
             <TouchableOpacity onPress={onLogIn}>
               <Text style={[styles.loginLink, { color: "#F97316" }]}>
-                Log In
+                {t("welcome.loginLink")}
               </Text>
             </TouchableOpacity>
           </View>

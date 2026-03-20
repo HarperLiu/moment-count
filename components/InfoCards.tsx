@@ -12,6 +12,7 @@ import * as Location from "expo-location";
 import { api } from "../app/api";
 import { MapComponent } from "./MapComponent";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface InfoCardsProps {
   relationshipStartDate: Date | null;
@@ -19,6 +20,7 @@ interface InfoCardsProps {
 
 export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [tempC, setTempC] = useState<number | null>(null);
 
   const daysTogether = useMemo(() => {
@@ -42,11 +44,11 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
   }, [relationshipStartDate]);
 
   const formatStartDate = (date: Date | null): string => {
-    if (!date) return "Since the start";
+    if (!date) return t("infoCards.sinceStart");
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
-    return `Since ${year}-${month}-${day}`;
+    return `${t("infoCards.since")} ${year}-${month}-${day}`;
   };
 
   useEffect(() => {
@@ -101,12 +103,12 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
   })();
 
   const getWeatherDescription = (): string => {
-    const t = tempC ?? 20;
-    if (t <= 5) return "A snowy day";
-    if (t <= 12) return "A cloudy day";
-    if (t <= 28) return "A partly cloudy day";
-    if (t > 32) return "A hot day";
-    return "A sunny day";
+    const temp = tempC ?? 20;
+    if (temp <= 5) return t("infoCards.snowy");
+    if (temp <= 12) return t("infoCards.cloudy");
+    if (temp <= 28) return t("infoCards.partlyCloudy");
+    if (temp > 32) return t("infoCards.hot");
+    return t("infoCards.sunny");
   };
 
   return (
@@ -132,7 +134,7 @@ export function InfoCards({ relationshipStartDate }: InfoCardsProps) {
                   >
                     {daysTogether}
                   </Text>{" "}
-                  {daysTogether === 1 ? "day" : "days"}
+                  {daysTogether === 1 ? t("infoCards.day") : t("infoCards.days")}
                 </Text>
               </View>
             </View>

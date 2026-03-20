@@ -21,6 +21,7 @@ import {
 } from "lucide-react-native";
 import { Image } from "expo-image";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -49,6 +50,7 @@ export function SettingsPage({
   onNavigateToAppearance,
 }: SettingsPageProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [name, setName] = useState<string>("");
   const [slogan, setSlogan] = useState<string>("");
   const [avatar, setAvatar] = useState<string>("");
@@ -56,25 +58,22 @@ export function SettingsPage({
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      "Delete Account",
-      "Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.",
+      t("settings.deleteAccountTitle"),
+      t("settings.deleteAccountMessage"),
       [
         {
-          text: "Cancel",
+          text: t("common.cancel"),
           style: "cancel",
         },
         {
-          text: "Delete",
+          text: t("settings.deleteAccountConfirm"),
           style: "destructive",
           onPress: async () => {
             setIsDeleting(true);
             try {
               await onDeleteAccount();
             } catch (error) {
-              Alert.alert(
-                "Error",
-                "Failed to delete account. Please try again."
-              );
+              Alert.alert(t("common.error"), t("settings.deleteAccountError"));
             } finally {
               setIsDeleting(false);
             }
@@ -106,26 +105,26 @@ export function SettingsPage({
   const settingsItems: SettingsItem[] = [
     {
       icon: User,
-      label: "Edit Profile",
-      description: "Update your personal information",
+      label: t("settings.editProfile"),
+      description: t("settings.editProfileDesc"),
       onClick: onNavigateToEditProfile,
     },
     {
       icon: Link2,
-      label: "Manage Link",
-      description: "Connect with your partner",
+      label: t("settings.manageLink"),
+      description: t("settings.manageLinkDesc"),
       onClick: onNavigateToUserLink,
     },
     {
       icon: Palette,
-      label: "Appearance",
-      description: "Customize app theme and display",
+      label: t("settings.appearance"),
+      description: t("settings.appearanceDesc"),
       onClick: onNavigateToAppearance,
     },
     {
       icon: Info,
-      label: "About",
-      description: "App version and information",
+      label: t("settings.about"),
+      description: t("settings.aboutDesc"),
       onClick: onNavigateToAbout,
     },
   ];
@@ -158,7 +157,7 @@ export function SettingsPage({
               <Text
                 style={[styles.pageTitle, { color: theme.colorForeground }]}
               >
-                Settings
+                {t("settings.title")}
               </Text>
             </View>
           </View>
@@ -258,7 +257,7 @@ export function SettingsPage({
             activeOpacity={0.7}
           >
             <LogOut size={20} color="#EF4444" />
-            <Text style={styles.logoutText}>Log Out</Text>
+            <Text style={styles.logoutText}>{t("settings.logout")}</Text>
           </TouchableOpacity>
 
           {/* Delete Account Button */}
@@ -279,7 +278,7 @@ export function SettingsPage({
             ) : (
               <>
                 <Trash2 size={20} color="#FFFFFF" />
-                <Text style={styles.deleteAccountText}>Delete Account</Text>
+                <Text style={styles.deleteAccountText}>{t("settings.deleteAccount")}</Text>
               </>
             )}
           </TouchableOpacity>

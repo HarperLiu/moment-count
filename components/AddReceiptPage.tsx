@@ -17,6 +17,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { ArrowLeft, Image as ImageIcon, Clock, X } from "lucide-react-native";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 export function AddReceiptPage({
   onBack,
@@ -31,6 +32,7 @@ export function AddReceiptPage({
   }) => void;
 }) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
@@ -115,19 +117,19 @@ export function AddReceiptPage({
             <ArrowLeft size={20} color={theme.colorForeground} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: theme.colorForeground }]}>
-            New Receipt
+            {t("receipt.addTitle")}
           </Text>
           <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Receipt Name
+            {t("receipt.nameLabel")}
           </Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
-            placeholder="Give your receipt a name..."
+            placeholder={t("receipt.namePlaceholder")}
             style={[
               styles.input,
               {
@@ -142,7 +144,7 @@ export function AddReceiptPage({
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Time to Cook
+            {t("receipt.timeToCook")}
           </Text>
           <View style={styles.pickerRow}>
             <View style={styles.pickerCol}>
@@ -154,7 +156,7 @@ export function AddReceiptPage({
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  Hours
+                  {t("receipt.hours")}
                 </Text>
               </View>
               <View
@@ -189,7 +191,7 @@ export function AddReceiptPage({
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  Minutes
+                  {t("receipt.minutes")}
                 </Text>
               </View>
               <View
@@ -221,12 +223,12 @@ export function AddReceiptPage({
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Instructions
+            {t("receipt.instructionsLabel")}
           </Text>
           <TextInput
             value={details}
             onChangeText={setDetails}
-            placeholder="Write the cooking instructions..."
+            placeholder={t("receipt.instructionsPlaceholder")}
             style={[
               styles.input,
               {
@@ -244,7 +246,7 @@ export function AddReceiptPage({
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Photos
+            {t("receipt.photosLabel")}
           </Text>
           {photos.length > 0 && (
             <ScrollView
@@ -293,13 +295,13 @@ export function AddReceiptPage({
             <Text
               style={[styles.uploadText, { color: theme.colorMutedForeground }]}
             >
-              Tap to add photos
+              {t("receipt.addPhotos")}
             </Text>
           </TouchableOpacity>
         </View>
 
         <Text style={[styles.hint, { color: theme.colorMutedForeground }]}>
-          Share your favorite receipts together
+          {t("receipt.hint")}
         </Text>
 
         <TouchableOpacity
@@ -317,7 +319,7 @@ export function AddReceiptPage({
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             {saving && <ActivityIndicator size="small" color="#FFFFFF" />}
-            <Text style={styles.saveBtnText}>Save Receipt</Text>
+            <Text style={styles.saveBtnText}>{t("receipt.save")}</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>

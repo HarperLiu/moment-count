@@ -4,8 +4,10 @@ import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import * as Location from "expo-location";
 import { MapPin } from "lucide-react-native";
 import { api } from "../app/api";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 export function MapComponent() {
+  const { t } = useLanguageContext();
   const [myLocation, setMyLocation] = useState<{
     lat: number;
     lon: number;
@@ -24,7 +26,7 @@ export function MapComponent() {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           if (mounted) {
-            setError("Location permission denied");
+            setError(t("map.permissionDenied"));
             setLoading(false);
           }
           return;
@@ -95,7 +97,7 @@ export function MapComponent() {
     return (
       <View style={styles.container}>
         <MapPin size={20} color="#94A3B8" />
-        <Text style={styles.errorText}>Map unavailable</Text>
+        <Text style={styles.errorText}>{t("map.unavailable")}</Text>
       </View>
     );
   }
@@ -150,7 +152,7 @@ export function MapComponent() {
             latitude: myLocation.lat,
             longitude: myLocation.lon,
           }}
-          title="You"
+          title={t("map.you")}
           anchor={{ x: 0.5, y: 1 }}
         >
           <CustomMarker color="#007AFF" />
@@ -163,7 +165,7 @@ export function MapComponent() {
               latitude: otherLocation.lat,
               longitude: otherLocation.lon,
             }}
-            title="Partner"
+            title={t("map.partner")}
             anchor={{ x: 0.5, y: 1 }}
           >
             <CustomMarker color="#FF5E5E" />

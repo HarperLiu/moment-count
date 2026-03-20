@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { api } from "../app/api";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface UserLinkPageProps {
   onBack: () => void;
@@ -37,6 +38,7 @@ export function UserLinkPage({
   onUpdateLink,
 }: UserLinkPageProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [linkUsername, setLinkUsername] = useState(currentLinkedUser || "");
   const [startDate, setStartDate] = useState<Date | undefined>(
     relationshipStartDate || undefined
@@ -74,12 +76,12 @@ export function UserLinkPage({
   const handleSave = async () => {
     const trimmedUsername = linkUsername.trim();
     if (!trimmedUsername) {
-      Alert.alert("错误", "请输入伴侣的用户名");
+      Alert.alert(t("common.error"), t("userLink.errorNoUsername"));
       return;
     }
 
     if (!userUuid) {
-      Alert.alert("错误", "用户信息不完整，请重新登录");
+      Alert.alert(t("common.error"), t("userLink.errorNoUser"));
       return;
     }
 
@@ -91,27 +93,26 @@ export function UserLinkPage({
         relationshipStartDate: startDate?.toISOString(),
       });
 
-      // 更新本地状态，包含开始日期和 linkKey
       onUpdateLink(trimmedUsername, startDate || null, result.linkKey);
-      Alert.alert("成功", "已成功关联伴侣", [
+      Alert.alert(t("userLink.successTitle"), t("userLink.successMessage"), [
         {
-          text: "确定",
+          text: t("userLink.confirm"),
           onPress: () => onBack(),
         },
       ]);
     } catch (error: any) {
       console.error("Link failed:", error);
-      let errorMessage = "关联失败，请重试";
+      let errorMessage = t("userLink.errorDefault");
 
       if (error.message.includes("404")) {
-        errorMessage = "未找到该用户，请检查用户名是否正确";
+        errorMessage = t("userLink.errorNotFound");
       } else if (error.message.includes("409")) {
-        errorMessage = "该用户已与其他人关联";
+        errorMessage = t("userLink.errorAlreadyLinked");
       } else if (error.message.includes("400")) {
-        errorMessage = "不能与自己关联";
+        errorMessage = t("userLink.errorSelf");
       }
 
-      Alert.alert("关联失败", errorMessage);
+      Alert.alert(t("userLink.errorTitle"), errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -119,36 +120,35 @@ export function UserLinkPage({
 
   const handleUnlink = async () => {
     if (!userUuid) {
-      Alert.alert("错误", "用户信息不完整，请重新登录");
+      Alert.alert(t("common.error"), t("userLink.errorNoUser"));
       return;
     }
 
-    Alert.alert("确认解除关联", "确定要解除与伴侣的关联吗？", [
+    Alert.alert(t("userLink.unlinkConfirmTitle"), t("userLink.unlinkConfirmMessage"), [
       {
-        text: "取消",
+        text: t("userLink.unlinkCancel"),
         style: "cancel",
       },
       {
-        text: "确定",
+        text: t("userLink.unlinkConfirm"),
         style: "destructive",
         onPress: async () => {
           setIsLoading(true);
           try {
             await api.unlinkUser({ userUuid });
 
-            // 更新本地状态，清除 linkId
             onUpdateLink(null, null, null);
             setLinkUsername("");
             setStartDate(undefined);
-            Alert.alert("成功", "已解除关联", [
+            Alert.alert(t("userLink.unlinkSuccessTitle"), t("userLink.unlinkSuccessMessage"), [
               {
-                text: "确定",
+                text: t("userLink.confirm"),
                 onPress: () => onBack(),
               },
             ]);
           } catch (error: any) {
             console.error("Unlink failed:", error);
-            Alert.alert("解除失败", "解除关联失败，请重试");
+            Alert.alert(t("userLink.unlinkErrorTitle"), t("userLink.unlinkErrorMessage"));
           } finally {
             setIsLoading(false);
           }
@@ -207,7 +207,7 @@ export function UserLinkPage({
               <Text
                 style={[styles.pageTitle, { color: theme.colorForeground }]}
               >
-                User Link
+                {t("userLink.title")}
               </Text>
             </View>
           </View>
@@ -253,7 +253,7 @@ export function UserLinkPage({
               <Text
                 style={[styles.linkCardTitle, { color: theme.colorForeground }]}
               >
-                Link with Someone
+                {t("userLink.linkWithSomeone")}
               </Text>
             </View>
 
@@ -263,7 +263,7 @@ export function UserLinkPage({
                 { color: theme.colorMutedForeground },
               ]}
             >
-              Connect with your partner to share memories and moments together.
+              {t("userLink.description")}
             </Text>
 
             {currentLinkedUser ? (
@@ -283,7 +283,7 @@ export function UserLinkPage({
                       { color: theme.colorMutedForeground },
                     ]}
                   >
-                    Currently linked with
+                    {t("userLink.currentlyLinkedWith")}
                   </Text>
                   <View style={styles.partnerRow}>
                     <Image
@@ -308,7 +308,7 @@ export function UserLinkPage({
                           { color: theme.colorMutedForeground },
                         ]}
                       >
-                        Sharing moments together
+                        {t("userLink.sharingMoments")}
                       </Text>
                     </View>
                   </View>
@@ -326,7 +326,7 @@ export function UserLinkPage({
                           { color: theme.colorMutedForeground },
                         ]}
                       >
-                        Started:{" "}
+                        {t("userLink.started")}{" "}
                         <Text
                           style={[
                             styles.dateInfoValue,
@@ -350,13 +350,13 @@ export function UserLinkPage({
                     <>
                       <ActivityIndicator color="#FFFFFF" size="small" />
                       <Text style={styles.unlinkButtonText}>
-                        Please wait...
+                        {t("common.loading")}
                       </Text>
                     </>
                   ) : (
                     <>
                       <X size={16} color="#FFFFFF" />
-                      <Text style={styles.unlinkButtonText}>Unlink</Text>
+                      <Text style={styles.unlinkButtonText}>{t("userLink.unlink")}</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -370,12 +370,12 @@ export function UserLinkPage({
                       { color: theme.colorMutedForeground },
                     ]}
                   >
-                    Partner's Username
+                    {t("userLink.partnerUsername")}
                   </Text>
                   <TextInput
                     value={linkUsername}
                     onChangeText={setLinkUsername}
-                    placeholder="Enter username"
+                    placeholder={t("userLink.usernamePlaceholder")}
                     style={[
                       styles.input,
                       {
@@ -394,7 +394,7 @@ export function UserLinkPage({
                       { color: theme.colorMutedForeground },
                     ]}
                   >
-                    Relationship Start Date
+                    {t("userLink.startDate")}
                   </Text>
                   <TouchableOpacity
                     onPress={() => setShowDatePicker(true)}
@@ -416,7 +416,7 @@ export function UserLinkPage({
                     >
                       {startDate
                         ? startDate.toLocaleDateString()
-                        : "Select a date"}
+                        : t("userLink.selectDate")}
                     </Text>
                     <CalendarHeart
                       size={16}
@@ -457,7 +457,7 @@ export function UserLinkPage({
                                 { color: theme.colorMutedForeground },
                               ]}
                             >
-                              取消
+                              {t("userLink.cancelDate")}
                             </Text>
                           </TouchableOpacity>
                           <Text
@@ -466,11 +466,11 @@ export function UserLinkPage({
                               { color: theme.colorForeground },
                             ]}
                           >
-                            选择日期
+                            {t("userLink.selectDateTitle")}
                           </Text>
                           <TouchableOpacity onPress={handleConfirmDate}>
                             <Text style={styles.datePickerConfirmText}>
-                              确认
+                              {t("userLink.confirmDate")}
                             </Text>
                           </TouchableOpacity>
                         </View>
@@ -509,10 +509,10 @@ export function UserLinkPage({
                   {isLoading ? (
                     <>
                       <ActivityIndicator color="#FFFFFF" size="small" />
-                      <Text style={styles.linkButtonText}>Please wait...</Text>
+                      <Text style={styles.linkButtonText}>{t("common.loading")}</Text>
                     </>
                   ) : (
-                    <Text style={styles.linkButtonText}>Link Now</Text>
+                    <Text style={styles.linkButtonText}>{t("userLink.linkNow")}</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -524,8 +524,8 @@ export function UserLinkPage({
               style={[styles.footerText, { color: theme.colorMutedForeground }]}
             >
               {currentLinkedUser
-                ? "You can unlink anytime to change your partner connection."
-                : "Once linked, you'll be able to share memories and moments with your partner."}
+                ? t("userLink.footerLinked")
+                : t("userLink.footerUnlinked")}
             </Text>
           </View>
         </View>

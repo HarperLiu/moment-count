@@ -13,6 +13,7 @@ import {
 import { Image } from "expo-image";
 import { X, Calendar } from "lucide-react-native";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 export type MemoryPhoto = { url: string; alt?: string };
 export type MemoryDetail = {
@@ -33,6 +34,7 @@ export function MemoryDetailCard({
   onClose: () => void;
 }) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [index, setIndex] = useState(
     Math.min(initialImageIndex, Math.max(0, (memory.photos?.length || 1) - 1))
   );
@@ -174,7 +176,7 @@ export function MemoryDetailCard({
             </Text>
             <View style={{ alignItems: "flex-end" }}>
               <TouchableOpacity onPress={onClose} style={styles.primaryBtn}>
-                <Text style={styles.primaryBtnText}>Close</Text>
+                <Text style={styles.primaryBtnText}>{t("common.close")}</Text>
               </TouchableOpacity>
             </View>
           </View>

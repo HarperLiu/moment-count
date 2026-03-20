@@ -13,6 +13,7 @@ import { StatusBar } from "./StatusBar";
 import { Upload } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../styles/useTheme";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface RegisterPageProps {
   onRegister: (data: {
@@ -26,6 +27,7 @@ interface RegisterPageProps {
 
 export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
   const theme = useTheme();
+  const { t } = useLanguageContext();
   const [name, setName] = useState("");
   const [slogan, setSlogan] = useState("");
   const [avatar, setAvatar] = useState("");
@@ -54,7 +56,7 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
       setError(null);
       await onRegister({ name, slogan, username: avatar, password });
     } catch (err: any) {
-      setError(err?.message || "注册失败，请重试");
+      setError(err?.message || t("register.error"));
     } finally {
       setSubmitting(false);
     }
@@ -90,12 +92,12 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               />
             </View>
             <Text style={[styles.headline, { color: "#F97316" }]}>
-              Sign Up Now
+              {t("register.title")}
             </Text>
             <Text
               style={[styles.subtitle, { color: theme.colorMutedForeground }]}
             >
-              Create your profile to start sharing moments
+              {t("register.subtitle")}
             </Text>
           </View>
 
@@ -106,12 +108,12 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               <Text
                 style={[styles.label, { color: theme.colorMutedForeground }]}
               >
-                Name <Text style={styles.required}>*</Text>
+                {t("register.name")} <Text style={styles.required}>*</Text>
               </Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
-                placeholder="Enter your name"
+                placeholder={t("register.namePlaceholder")}
                 placeholderTextColor={theme.colorMutedForeground}
                 style={[
                   styles.input,
@@ -129,12 +131,12 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               <Text
                 style={[styles.label, { color: theme.colorMutedForeground }]}
               >
-                Password <Text style={styles.required}>*</Text>
+                {t("register.password")} <Text style={styles.required}>*</Text>
               </Text>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Enter your password"
+                placeholder={t("register.passwordPlaceholder")}
                 placeholderTextColor={theme.colorMutedForeground}
                 secureTextEntry
                 style={[
@@ -153,12 +155,12 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               <Text
                 style={[styles.label, { color: theme.colorMutedForeground }]}
               >
-                Slogan
+                {t("register.slogan")}
               </Text>
               <TextInput
                 value={slogan}
                 onChangeText={setSlogan}
-                placeholder="What's your motto?"
+                placeholder={t("register.sloganPlaceholder")}
                 placeholderTextColor={theme.colorMutedForeground}
                 style={[
                   styles.input,
@@ -176,7 +178,7 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               <Text
                 style={[styles.label, { color: theme.colorMutedForeground }]}
               >
-                Avatar
+                {t("register.avatar")}
               </Text>
 
               {avatar && (
@@ -206,7 +208,7 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  Tap to upload avatar
+                  {t("register.uploadAvatar")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -223,7 +225,7 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               <Text
                 style={[styles.infoText, { color: theme.colorMutedForeground }]}
               >
-                You can change these details later in settings
+                {t("register.info")}
               </Text>
             )}
 
@@ -242,7 +244,7 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 )}
                 <Text style={styles.submitBtnText}>
-                  {submitting ? "Please wait..." : "Get Started"}
+                  {submitting ? t("common.loading") : t("register.submit")}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -255,11 +257,11 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
                   { color: theme.colorMutedForeground },
                 ]}
               >
-                Already have an account?{" "}
+                {t("register.alreadyHaveAccount")}
               </Text>
               <TouchableOpacity onPress={onLoginClick}>
                 <Text style={[styles.loginLink, { color: "#F97316" }]}>
-                  Log In
+                  {t("register.loginLink")}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -15,6 +15,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { api } from "../app/api";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface EditProfilePageProps {
   onBack: () => void;
@@ -23,6 +24,7 @@ interface EditProfilePageProps {
 
 export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [name, setName] = useState("");
   const [slogan, setSlogan] = useState("");
   const [avatar, setAvatar] = useState("");
@@ -55,16 +57,14 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
 
   const handleAvatarUpload = async () => {
     try {
-      // 请求权限
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permissionResult.granted === false) {
-        Alert.alert("权限错误", "需要相册权限才能上传头像");
+        Alert.alert(t("common.error"), t("editProfile.permissionError"));
         return;
       }
 
-      // 选择图片
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -78,17 +78,16 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
         if (asset.base64) {
           setIsUploading(true);
           try {
-            // 上传到服务器
             const uploadResult = await api.uploadBase64Image({
               filename: `avatar_${Date.now()}.jpg`,
               base64: asset.base64,
               contentType: "image/jpeg",
             });
             setAvatar(uploadResult.url);
-            Alert.alert("成功", "头像上传成功");
+            Alert.alert(t("editProfile.successTitle"), t("editProfile.uploadSuccess"));
           } catch (error) {
             console.error("Upload failed:", error);
-            Alert.alert("上传失败", "头像上传失败，请重试");
+            Alert.alert(t("common.error"), t("editProfile.uploadFailed"));
           } finally {
             setIsUploading(false);
           }
@@ -96,24 +95,23 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
       }
     } catch (error) {
       console.error("Image picker error:", error);
-      Alert.alert("错误", "选择图片失败");
+      Alert.alert(t("common.error"), t("editProfile.uploadError"));
     }
   };
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert("错误", "请输入姓名");
+      Alert.alert(t("common.error"), t("editProfile.errorNoName"));
       return;
     }
 
     if (!userUuid) {
-      Alert.alert("错误", "用户信息不完整，请重新登录");
+      Alert.alert(t("common.error"), t("editProfile.errorNoUser"));
       return;
     }
 
     setIsLoading(true);
     try {
-      // 更新服务器数据
       await api.upsertUser({
         uuid: userUuid,
         name: name.trim(),
@@ -121,7 +119,6 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
         avatar: avatar,
       });
 
-      // 更新本地存储
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const AsyncStorage = require("@react-native-async-storage/async-storage")
         .default as {
@@ -135,18 +132,17 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
       };
       await AsyncStorage.setItem("user:profile", JSON.stringify(profile));
 
-      // 调用回调
       onSave?.({ name: name.trim(), slogan: slogan.trim(), avatar });
 
-      Alert.alert("成功", "个人资料已更新", [
+      Alert.alert(t("editProfile.successTitle"), t("editProfile.successMessage"), [
         {
-          text: "确定",
+          text: t("editProfile.confirm"),
           onPress: () => onBack(),
         },
       ]);
     } catch (error: any) {
       console.error("Update profile failed:", error);
-      Alert.alert("更新失败", "更新个人资料失败，请重试");
+      Alert.alert(t("editProfile.errorTitle"), t("editProfile.errorMessage"));
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +177,7 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
               <Text
                 style={[styles.pageTitle, { color: theme.colorForeground }]}
               >
-                Edit Profile
+                {t("editProfile.title")}
               </Text>
             </View>
           </View>
@@ -225,7 +221,7 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
                   { color: theme.colorMutedForeground },
                 ]}
               >
-                {isUploading ? "Uploading..." : "Change Avatar"}
+                {isUploading ? t("editProfile.uploading") : t("editProfile.changeAvatar")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -233,12 +229,12 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
           {/* Name Input */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-              Name <Text style={styles.required}>*</Text>
+              {t("editProfile.name")} <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
-              placeholder="Enter your name"
+              placeholder={t("editProfile.namePlaceholder")}
               style={[
                 styles.input,
                 {
@@ -254,12 +250,12 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
           {/* Slogan Input */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-              Slogan
+              {t("editProfile.slogan")}
             </Text>
             <TextInput
               value={slogan}
               onChangeText={setSlogan}
-              placeholder="What's your motto?"
+              placeholder={t("editProfile.sloganPlaceholder")}
               style={[
                 styles.input,
                 {
@@ -285,10 +281,10 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
             {isLoading ? (
               <>
                 <ActivityIndicator color="#FFFFFF" size="small" />
-                <Text style={styles.saveButtonText}>Please wait...</Text>
+                <Text style={styles.saveButtonText}>{t("common.loading")}</Text>
               </>
             ) : (
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              <Text style={styles.saveButtonText}>{t("editProfile.save")}</Text>
             )}
           </TouchableOpacity>
         </View>

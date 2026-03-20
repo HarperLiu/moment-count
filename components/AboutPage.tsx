@@ -10,6 +10,7 @@ import {
 import { ArrowLeft } from "lucide-react-native";
 import { WebView } from "react-native-webview";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface AboutPageProps {
   onBack: () => void;
@@ -17,6 +18,7 @@ interface AboutPageProps {
 
 export function AboutPage({ onBack }: AboutPageProps) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -173,7 +175,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
             <ArrowLeft size={20} color={theme.colorForeground} />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: theme.colorForeground }]}>
-            About
+            {t("about.title")}
           </Text>
         </View>
       </View>

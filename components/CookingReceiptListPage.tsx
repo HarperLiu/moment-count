@@ -14,6 +14,7 @@ import { Image } from "expo-image";
 import { ArrowLeft, Plus, Clock } from "lucide-react-native";
 import { api } from "../app/api";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 import { ReceiptDetailCard } from "./ReceiptDetailCard";
 
 type Receipt = {
@@ -81,6 +82,7 @@ export function CookingReceiptListPage({
   onAddReceipt: () => void;
 }) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +147,7 @@ export function CookingReceiptListPage({
               <Text
                 style={[styles.pageTitle, { color: theme.colorForeground }]}
               >
-                Cooking Receipt
+                {t("receipt.title")}
               </Text>
             </View>
             <TouchableOpacity onPress={onAddReceipt} style={styles.iconBtn}>
@@ -164,7 +166,7 @@ export function CookingReceiptListPage({
                   { color: theme.colorMutedForeground },
                 ]}
               >
-                Loading receipts...
+                {t("receipt.loadingText")}
               </Text>
             </View>
           )}
@@ -210,7 +212,7 @@ export function CookingReceiptListPage({
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  More is coming
+                  {t("common.moreIsComing")}
                 </Text>
                 <View
                   style={[

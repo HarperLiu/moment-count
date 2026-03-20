@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react-native";
 import { useThemeContext } from "../styles/ThemeContext";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 // Format date to yyyy-mm-dd
 function formatDate(date: Date): string {
@@ -46,6 +47,7 @@ export function AddMemoryPage({
   }) => void;
 }) {
   const { theme } = useThemeContext();
+  const { t } = useLanguageContext();
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
@@ -145,19 +147,19 @@ export function AddMemoryPage({
             <ArrowLeft size={20} color={theme.colorForeground} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: theme.colorForeground }]}>
-            New Memory
+            {t("memory.addTitle")}
           </Text>
           <View style={{ width: 36 }} />
         </View>
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Title
+            {t("memory.titleLabel")}
           </Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
-            placeholder="Give your memory a title..."
+            placeholder={t("memory.titlePlaceholder")}
             style={[
               styles.input,
               {
@@ -172,7 +174,7 @@ export function AddMemoryPage({
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Date
+            {t("memory.dateLabel")}
           </Text>
           <TouchableOpacity
             style={[
@@ -222,7 +224,7 @@ export function AddMemoryPage({
                           { color: theme.colorMutedForeground },
                         ]}
                       >
-                        取消
+                        {t("memory.cancel")}
                       </Text>
                     </TouchableOpacity>
                     <Text
@@ -231,10 +233,10 @@ export function AddMemoryPage({
                         { color: theme.colorForeground },
                       ]}
                     >
-                      选择日期
+                      {t("memory.selectDate")}
                     </Text>
                     <TouchableOpacity onPress={handleConfirmDate}>
-                      <Text style={styles.datePickerConfirmText}>确认</Text>
+                      <Text style={styles.datePickerConfirmText}>{t("memory.confirm")}</Text>
                     </TouchableOpacity>
                   </View>
                   <DateTimePicker
@@ -262,12 +264,12 @@ export function AddMemoryPage({
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Details
+            {t("memory.detailsLabel")}
           </Text>
           <TextInput
             value={details}
             onChangeText={setDetails}
-            placeholder="Write about this special moment..."
+            placeholder={t("memory.detailsPlaceholder")}
             style={[
               styles.input,
               {
@@ -285,7 +287,7 @@ export function AddMemoryPage({
 
         <View style={styles.fieldBlock}>
           <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-            Photos
+            {t("memory.photosLabel")}
           </Text>
           {photos.length > 0 && (
             <ScrollView
@@ -334,13 +336,13 @@ export function AddMemoryPage({
             <Text
               style={[styles.uploadText, { color: theme.colorMutedForeground }]}
             >
-              Tap to add photos
+              {t("memory.addPhotos")}
             </Text>
           </TouchableOpacity>
         </View>
 
         <Text style={[styles.hint, { color: theme.colorMutedForeground }]}>
-          Capture and preserve your special moments together
+          {t("memory.hint")}
         </Text>
 
         <TouchableOpacity
@@ -358,7 +360,7 @@ export function AddMemoryPage({
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             {saving && <ActivityIndicator size="small" color="#FFFFFF" />}
-            <Text style={styles.saveBtnText}>Save Memory</Text>
+            <Text style={styles.saveBtnText}>{t("memory.save")}</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>

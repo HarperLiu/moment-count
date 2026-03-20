@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,9 +7,14 @@ import {
   ScrollView,
   SafeAreaView,
   Switch,
+  Alert,
 } from "react-native";
 import { ArrowLeft, Moon, Globe, ChevronRight } from "lucide-react-native";
 import { useThemeContext } from "../styles/ThemeContext";
+import {
+  useLanguageContext,
+  Language,
+} from "../styles/LanguageContext";
 
 interface AppearancePageProps {
   onBack: () => void;
@@ -23,23 +28,17 @@ export function AppearancePage({
   onToggleDarkMode,
 }: AppearancePageProps) {
   const { theme } = useThemeContext();
-  const [language, setLanguage] = useState<string>("English");
+  const { t, language, setLanguage } = useLanguageContext();
 
-  useEffect(() => {
-    // 从 AsyncStorage 加载语言设置
-    (async () => {
-      try {
-        const AsyncStorage =
-          require("@react-native-async-storage/async-storage").default as {
-            getItem: (k: string) => Promise<string | null>;
-          };
-        const savedLanguage = await AsyncStorage.getItem("user:language");
-        if (savedLanguage) {
-          setLanguage(savedLanguage);
-        }
-      } catch {}
-    })();
-  }, []);
+  const languageLabel = language === "zh" ? "简体中文" : "English";
+
+  const handleSelectLanguage = () => {
+    Alert.alert(t("appearance.selectLanguage"), undefined, [
+      { text: "English", onPress: () => setLanguage("en" as Language) },
+      { text: "简体中文", onPress: () => setLanguage("zh" as Language) },
+      { text: t("common.cancel"), style: "cancel" },
+    ]);
+  };
 
   return (
     <SafeAreaView
@@ -67,7 +66,7 @@ export function AppearancePage({
               <Text
                 style={[styles.pageTitle, { color: theme.colorForeground }]}
               >
-                Appearance
+                {t("appearance.title")}
               </Text>
             </View>
           </View>
@@ -95,7 +94,7 @@ export function AppearancePage({
                 <Text
                   style={[styles.itemLabel, { color: theme.colorForeground }]}
                 >
-                  Dark Mode
+                  {t("appearance.darkMode")}
                 </Text>
                 <Text
                   style={[
@@ -103,7 +102,7 @@ export function AppearancePage({
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  Enable dark theme for the app
+                  {t("appearance.darkModeDesc")}
                 </Text>
               </View>
               <Switch
@@ -119,10 +118,7 @@ export function AppearancePage({
             <TouchableOpacity
               style={styles.settingsItem}
               activeOpacity={0.7}
-              onPress={() => {
-                // TODO: 打开语言选择器
-                console.log("Open language selector");
-              }}
+              onPress={handleSelectLanguage}
             >
               <View style={styles.iconContainer}>
                 <Globe size={20} color="#F97316" />
@@ -131,7 +127,7 @@ export function AppearancePage({
                 <Text
                   style={[styles.itemLabel, { color: theme.colorForeground }]}
                 >
-                  Language
+                  {t("appearance.language")}
                 </Text>
                 <Text
                   style={[
@@ -139,7 +135,7 @@ export function AppearancePage({
                     { color: theme.colorMutedForeground },
                   ]}
                 >
-                  {language}
+                  {languageLabel}
                 </Text>
               </View>
               <ChevronRight size={20} color={theme.colorMutedForeground} />

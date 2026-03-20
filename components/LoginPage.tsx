@@ -11,6 +11,7 @@ import {
 import { ActivityIndicator } from "react-native";
 import { StatusBar } from "./StatusBar";
 import { useTheme } from "../styles/useTheme";
+import { useLanguageContext } from "../styles/LanguageContext";
 
 interface LoginPageProps {
   onLogin: (data: { username: string; password: string }) => Promise<void>;
@@ -19,6 +20,7 @@ interface LoginPageProps {
 
 export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
   const theme = useTheme();
+  const { t } = useLanguageContext();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -32,7 +34,7 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
       setError(null);
       await onLogin({ username, password });
     } catch (err: any) {
-      setError(err?.message || "登录失败，请检查用户名和密码");
+      setError(err?.message || t("login.error"));
     } finally {
       setSubmitting(false);
     }
@@ -68,12 +70,12 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
               />
             </View>
             <Text style={[styles.headline, { color: "#F97316" }]}>
-              Log In Now
+              {t("login.title")}
             </Text>
             <Text
               style={[styles.subtitle, { color: theme.colorMutedForeground }]}
             >
-              Log in to continue sharing moments
+              {t("login.subtitle")}
             </Text>
           </View>
 
@@ -84,12 +86,12 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
               <Text
                 style={[styles.label, { color: theme.colorMutedForeground }]}
               >
-                Name <Text style={styles.required}>*</Text>
+                {t("login.name")} <Text style={styles.required}>*</Text>
               </Text>
               <TextInput
                 value={username}
                 onChangeText={setUsername}
-                placeholder="Enter your username"
+                placeholder={t("login.namePlaceholder")}
                 placeholderTextColor={theme.colorMutedForeground}
                 style={[
                   styles.input,
@@ -107,12 +109,12 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
               <Text
                 style={[styles.label, { color: theme.colorMutedForeground }]}
               >
-                Password <Text style={styles.required}>*</Text>
+                {t("login.password")} <Text style={styles.required}>*</Text>
               </Text>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Enter your password"
+                placeholder={t("login.passwordPlaceholder")}
                 placeholderTextColor={theme.colorMutedForeground}
                 secureTextEntry
                 style={[
@@ -138,7 +140,7 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
               <Text
                 style={[styles.infoText, { color: theme.colorMutedForeground }]}
               >
-                Enter your credentials to access your account
+                {t("login.info")}
               </Text>
             )}
 
@@ -157,7 +159,7 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 )}
                 <Text style={styles.submitBtnText}>
-                  {submitting ? "Please wait..." : "Log In"}
+                  {submitting ? t("common.loading") : t("login.submit")}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -170,11 +172,11 @@ export function LoginPage({ onLogin, onSignUpClick }: LoginPageProps) {
                   { color: theme.colorMutedForeground },
                 ]}
               >
-                Don't have an account?{" "}
+                {t("login.noAccount")}
               </Text>
               <TouchableOpacity onPress={onSignUpClick}>
                 <Text style={[styles.signUpLink, { color: "#F97316" }]}>
-                  Sign Up
+                  {t("login.signUp")}
                 </Text>
               </TouchableOpacity>
             </View>
