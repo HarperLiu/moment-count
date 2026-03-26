@@ -4,10 +4,7 @@ import {
   getInfoAsync,
   EncodingType,
 } from "expo-file-system/legacy";
-
-const GEMINI_API_KEY = "REDACTED_GEMINI_KEY";
-const GEMINI_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent";
+import { BASE_URL } from "../app/api";
 
 function todayKey(): string {
   const d = new Date();
@@ -44,15 +41,12 @@ export async function getCelebrationImage(
       return filePath;
     }
 
-    // Call Gemini API
+    // Call server proxy
     const prompt = buildPrompt(milestoneLabel, language);
-    const response = await fetch(`${GEMINI_ENDPOINT}?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`${BASE_URL}/generate-celebration-image`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
-      }),
+      body: JSON.stringify({ prompt }),
     });
 
     if (!response.ok) {
@@ -60,7 +54,7 @@ export async function getCelebrationImage(
       return null;
     }
 
-    const json = await response.json();
+    const { data: json } = await response.json();
     const parts = json?.candidates?.[0]?.content?.parts;
     if (!Array.isArray(parts)) {
       console.warn("[CelebrationImage] Unexpected response:", JSON.stringify(json).slice(0, 300));
