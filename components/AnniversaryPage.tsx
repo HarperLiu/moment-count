@@ -297,22 +297,6 @@ export function AnniversaryPage({
     (a, b) => daysUntilNextOccurrence(a.date) - daysUntilNextOccurrence(b.date)
   );
 
-  const handleTestNotification = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(t("common.error"), t("anniversary.notificationPermission"));
-      return;
-    }
-    // Use the nearest upcoming anniversary's real reminder content
-    const nearest = sorted[0];
-    const title = nearest?.title || t("anniversary.testNotificationTitle");
-    const body = nearest?.reminder || t("anniversary.testNotificationBody");
-    await Notifications.scheduleNotificationAsync({
-      content: { title, body },
-      trigger: null,
-    });
-  };
-
   // --- Render ---
   return (
     <SafeAreaView
@@ -634,26 +618,6 @@ export function AnniversaryPage({
                   {editingId
                     ? t("anniversary.updateBtn")
                     : t("anniversary.saveBtn")}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Test notification */}
-              <TouchableOpacity
-                style={[
-                  styles.testBtn,
-                  { borderColor: theme.colorBorder },
-                ]}
-                onPress={handleTestNotification}
-                activeOpacity={0.7}
-              >
-                <Bell size={16} color={theme.colorMutedForeground} />
-                <Text
-                  style={[
-                    styles.testBtnText,
-                    { color: theme.colorMutedForeground },
-                  ]}
-                >
-                  {t("anniversary.testNotification")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1084,14 +1048,4 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   saveBtnText: { fontSize: 15, fontWeight: "600" },
-  testBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    borderRadius: 12,
-    paddingVertical: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  testBtnText: { fontSize: 13, fontWeight: "500" },
 });
