@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { ArrowLeft, Link, X, CalendarHeart } from "lucide-react-native";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { api } from "../app/api";
 import { useThemeContext } from "../styles/ThemeContext";
@@ -164,7 +163,6 @@ export function UserLinkPage({
         setStartDate(selectedDate);
       }
     } else {
-      // iOS: 只更新临时日期，不关闭选择器
       if (selectedDate) {
         setStartDate(selectedDate);
       }
@@ -172,6 +170,7 @@ export function UserLinkPage({
   };
 
   const handleConfirmDate = () => {
+    if (!startDate) setStartDate(new Date());
     setShowDatePicker(false);
   };
 
@@ -179,43 +178,43 @@ export function UserLinkPage({
     setShowDatePicker(false);
   };
 
-  const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
+  const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.jpg");
 
   return (
     <SafeAreaView
-      style={[styles.screen, { backgroundColor: theme.colorSecondary }]}
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
     >
+      {/* Header */}
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: theme.colorBorder },
+        ]}
+      >
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
+            <ArrowLeft size={22} color={theme.colorForeground} />
+          </TouchableOpacity>
+          <Text style={[styles.pageTitle, { color: theme.colorForeground }]}>
+            {t("userLink.title")}
+          </Text>
+          <View style={styles.iconBtn} />
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Sticky Header */}
+        {/* Profile Card */}
         <View
           style={[
-            styles.stickyHeader,
+            styles.profileCard,
             {
-              backgroundColor: theme.colorSecondary,
-              borderBottomColor: theme.colorBorder,
+              backgroundColor: theme.colorCard,
+              borderColor: theme.colorBorder,
             },
           ]}
-        >
-          <View style={styles.stickyRow}>
-            <View style={styles.leftGroup}>
-              <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color={theme.colorForeground} />
-              </TouchableOpacity>
-              <Text
-                style={[styles.pageTitle, { color: theme.colorForeground }]}
-              >
-                {t("userLink.title")}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Profile Section */}
-        <View
-          style={[styles.profileSection, { backgroundColor: theme.colorCard }]}
         >
           <View style={styles.profileRow}>
             <Image
@@ -245,289 +244,315 @@ export function UserLinkPage({
           </View>
         </View>
 
-        {/* Link Section */}
-        <View style={styles.linkSection}>
-          <View style={[styles.linkCard, { backgroundColor: theme.colorCard }]}>
-            <View style={styles.linkCardHeader}>
-              <Link size={20} color="#F97316" />
-              <Text
-                style={[styles.linkCardTitle, { color: theme.colorForeground }]}
-              >
-                {t("userLink.linkWithSomeone")}
-              </Text>
-            </View>
-
-            <Text
+        {/* Link Card */}
+        <View
+          style={[
+            styles.linkCard,
+            {
+              backgroundColor: theme.colorCard,
+              borderColor: theme.colorBorder,
+            },
+          ]}
+        >
+          <View style={styles.linkCardHeader}>
+            <View
               style={[
-                styles.linkDescription,
-                { color: theme.colorMutedForeground },
+                styles.linkIconContainer,
+                { backgroundColor: theme.colorPrimary + "15" },
               ]}
             >
-              {t("userLink.description")}
+              <Link size={18} color={theme.colorPrimary} />
+            </View>
+            <Text
+              style={[styles.linkCardTitle, { color: theme.colorForeground }]}
+            >
+              {t("userLink.linkWithSomeone")}
             </Text>
+          </View>
 
-            {currentLinkedUser ? (
-              <View>
-                <View
+          <Text
+            style={[
+              styles.linkDescription,
+              { color: theme.colorMutedForeground },
+            ]}
+          >
+            {t("userLink.description")}
+          </Text>
+
+          {currentLinkedUser ? (
+            <View>
+              <View
+                style={[
+                  styles.linkedBox,
+                  {
+                    backgroundColor: theme.colorInputBackground,
+                    borderColor: theme.colorBorder,
+                  },
+                ]}
+              >
+                <Text
                   style={[
-                    styles.linkedBox,
-                    {
-                      backgroundColor: theme.colorSecondary,
-                      borderColor: theme.colorBorder,
-                    },
+                    styles.linkedLabel,
+                    { color: theme.colorMutedForeground },
                   ]}
                 >
-                  <Text
+                  {t("userLink.currentlyLinkedWith")}
+                </Text>
+                <View style={styles.partnerRow}>
+                  <Image
+                    source={avatarSource}
+                    style={styles.partnerAvatar}
+                    contentFit="cover"
+                    transition={200}
+                    cachePolicy="memory-disk"
+                  />
+                  <View style={styles.partnerInfo}>
+                    <Text
+                      style={[
+                        styles.partnerName,
+                        { color: theme.colorForeground },
+                      ]}
+                    >
+                      {currentLinkedUser}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.partnerSubtitle,
+                        { color: theme.colorMutedForeground },
+                      ]}
+                    >
+                      {t("userLink.sharingMoments")}
+                    </Text>
+                  </View>
+                </View>
+                {relationshipStartDate && (
+                  <View
                     style={[
-                      styles.linkedLabel,
-                      { color: theme.colorMutedForeground },
+                      styles.dateInfoRow,
+                      { borderTopColor: theme.colorBorder },
                     ]}
                   >
-                    {t("userLink.currentlyLinkedWith")}
-                  </Text>
-                  <View style={styles.partnerRow}>
-                    <Image
-                      source={avatarSource}
-                      style={styles.partnerAvatar}
-                      contentFit="cover"
-                      transition={200}
-                      cachePolicy="memory-disk"
-                    />
-                    <View style={styles.partnerInfo}>
+                    <CalendarHeart size={16} color={theme.colorPrimary} />
+                    <Text
+                      style={[
+                        styles.dateInfoText,
+                        { color: theme.colorMutedForeground },
+                      ]}
+                    >
+                      {t("userLink.started")}{" "}
                       <Text
                         style={[
-                          styles.partnerName,
+                          styles.dateInfoValue,
                           { color: theme.colorForeground },
                         ]}
                       >
-                        {currentLinkedUser}
+                        {relationshipStartDate.toLocaleDateString()}
                       </Text>
-                      <Text
-                        style={[
-                          styles.partnerSubtitle,
-                          { color: theme.colorMutedForeground },
-                        ]}
-                      >
-                        {t("userLink.sharingMoments")}
-                      </Text>
-                    </View>
+                    </Text>
                   </View>
-                  {relationshipStartDate && (
-                    <View
-                      style={[
-                        styles.dateInfoRow,
-                        { borderTopColor: theme.colorBorder },
-                      ]}
-                    >
-                      <CalendarHeart size={16} color="#F97316" />
-                      <Text
-                        style={[
-                          styles.dateInfoText,
-                          { color: theme.colorMutedForeground },
-                        ]}
-                      >
-                        {t("userLink.started")}{" "}
-                        <Text
-                          style={[
-                            styles.dateInfoValue,
-                            { color: theme.colorForeground },
-                          ]}
-                        >
-                          {relationshipStartDate.toLocaleDateString()}
-                        </Text>
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                )}
+              </View>
 
-                <TouchableOpacity
-                  onPress={handleUnlink}
-                  style={styles.unlinkButton}
-                  activeOpacity={0.8}
-                  disabled={isLoading}
+              <TouchableOpacity
+                onPress={handleUnlink}
+                style={[
+                  styles.unlinkButton,
+                  { backgroundColor: theme.colorDestructive },
+                ]}
+                activeOpacity={0.7}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                    <Text style={styles.unlinkButtonText}>
+                      {t("common.loading")}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <X size={16} color="#FFFFFF" />
+                    <Text style={styles.unlinkButtonText}>{t("userLink.unlink")}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View>
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: theme.colorMutedForeground },
+                  ]}
                 >
-                  {isLoading ? (
-                    <>
-                      <ActivityIndicator color="#FFFFFF" size="small" />
-                      <Text style={styles.unlinkButtonText}>
-                        {t("common.loading")}
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <X size={16} color="#FFFFFF" />
-                      <Text style={styles.unlinkButtonText}>{t("userLink.unlink")}</Text>
-                    </>
-                  )}
+                  {t("userLink.partnerUsername")}
+                </Text>
+                <TextInput
+                  value={linkUsername}
+                  onChangeText={setLinkUsername}
+                  placeholder={t("userLink.usernamePlaceholder")}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.colorInputBackground,
+                      borderColor: theme.colorBorder,
+                      color: theme.colorForeground,
+                    },
+                  ]}
+                  placeholderTextColor={theme.colorMutedForeground}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: theme.colorMutedForeground },
+                  ]}
+                >
+                  {t("userLink.startDate")}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
+                  style={[
+                    styles.datePickerButton,
+                    {
+                      backgroundColor: theme.colorInputBackground,
+                      borderColor: theme.colorBorder,
+                    },
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.datePickerText,
+                      { color: theme.colorForeground },
+                      !startDate && { color: theme.colorMutedForeground },
+                    ]}
+                  >
+                    {startDate
+                      ? startDate.toLocaleDateString()
+                      : t("userLink.selectDate")}
+                  </Text>
+                  <CalendarHeart
+                    size={16}
+                    color={theme.colorMutedForeground}
+                  />
                 </TouchableOpacity>
               </View>
-            ) : (
-              <View>
-                <View style={styles.inputGroup}>
-                  <Text
-                    style={[
-                      styles.label,
-                      { color: theme.colorMutedForeground },
-                    ]}
-                  >
-                    {t("userLink.partnerUsername")}
-                  </Text>
-                  <TextInput
-                    value={linkUsername}
-                    onChangeText={setLinkUsername}
-                    placeholder={t("userLink.usernamePlaceholder")}
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: theme.colorSecondary,
-                        color: theme.colorForeground,
-                      },
-                    ]}
-                    placeholderTextColor={theme.colorMutedForeground}
-                  />
-                </View>
 
-                <View style={styles.inputGroup}>
-                  <Text
-                    style={[
-                      styles.label,
-                      { color: theme.colorMutedForeground },
-                    ]}
-                  >
-                    {t("userLink.startDate")}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setShowDatePicker(true)}
-                    style={[
-                      styles.datePickerButton,
-                      { backgroundColor: theme.colorSecondary },
-                    ]}
-                    activeOpacity={0.8}
-                  >
-                    <Text
+              {Platform.OS === "ios" && (
+                <Modal
+                  visible={showDatePicker}
+                  transparent={true}
+                  animationType="fade"
+                  onRequestClose={handleCancelDate}
+                >
+                  <View style={styles.datePickerModal}>
+                    <TouchableOpacity
+                      style={styles.datePickerBackdrop}
+                      activeOpacity={1}
+                      onPress={handleCancelDate}
+                    />
+                    <View
                       style={[
-                        styles.datePickerText,
-                        { color: theme.colorForeground },
-                        !startDate && {
-                          ...styles.datePickerPlaceholder,
-                          color: theme.colorMutedForeground,
+                        styles.datePickerContainer,
+                        {
+                          backgroundColor: theme.colorCard,
+                          borderColor: theme.colorBorder,
                         },
                       ]}
                     >
-                      {startDate
-                        ? startDate.toLocaleDateString()
-                        : t("userLink.selectDate")}
-                    </Text>
-                    <CalendarHeart
-                      size={16}
-                      color={theme.colorMutedForeground}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                {Platform.OS === "ios" && (
-                  <Modal
-                    visible={showDatePicker}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={handleCancelDate}
-                  >
-                    <View style={styles.datePickerModal}>
-                      <TouchableOpacity
-                        style={styles.datePickerBackdrop}
-                        activeOpacity={1}
-                        onPress={handleCancelDate}
-                      />
                       <View
                         style={[
-                          styles.datePickerContainer,
-                          { backgroundColor: theme.colorCard },
+                          styles.datePickerHeader,
+                          { borderBottomColor: theme.colorBorder },
                         ]}
                       >
-                        <View
-                          style={[
-                            styles.datePickerHeader,
-                            { borderBottomColor: theme.colorBorder },
-                          ]}
-                        >
-                          <TouchableOpacity onPress={handleCancelDate}>
-                            <Text
-                              style={[
-                                styles.datePickerCancelText,
-                                { color: theme.colorMutedForeground },
-                              ]}
-                            >
-                              {t("userLink.cancelDate")}
-                            </Text>
-                          </TouchableOpacity>
+                        <TouchableOpacity onPress={handleCancelDate}>
                           <Text
                             style={[
-                              styles.datePickerTitle,
-                              { color: theme.colorForeground },
+                              styles.datePickerCancelText,
+                              { color: theme.colorMutedForeground },
                             ]}
                           >
-                            {t("userLink.selectDateTitle")}
+                            {t("userLink.cancelDate")}
                           </Text>
-                          <TouchableOpacity onPress={handleConfirmDate}>
-                            <Text style={styles.datePickerConfirmText}>
-                              {t("userLink.confirmDate")}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                        <DateTimePicker
-                          value={startDate || new Date()}
-                          mode="date"
-                          display="spinner"
-                          onChange={handleDateChange}
-                          maximumDate={new Date()}
-                        />
+                        </TouchableOpacity>
+                        <Text
+                          style={[
+                            styles.datePickerTitle,
+                            { color: theme.colorForeground },
+                          ]}
+                        >
+                          {t("userLink.selectDateTitle")}
+                        </Text>
+                        <TouchableOpacity onPress={handleConfirmDate}>
+                          <Text
+                            style={[
+                              styles.datePickerConfirmText,
+                              { color: theme.colorPrimary },
+                            ]}
+                          >
+                            {t("userLink.confirmDate")}
+                          </Text>
+                        </TouchableOpacity>
                       </View>
+                      <DateTimePicker
+                        value={startDate || new Date()}
+                        mode="date"
+                        display="spinner"
+                        onChange={handleDateChange}
+                        maximumDate={new Date()}
+                      />
                     </View>
-                  </Modal>
+                  </View>
+                </Modal>
+              )}
+
+              {showDatePicker && Platform.OS === "android" && (
+                <DateTimePicker
+                  value={startDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                  maximumDate={new Date()}
+                />
+              )}
+
+              <TouchableOpacity
+                onPress={handleSave}
+                disabled={!linkUsername.trim() || isLoading}
+                style={[
+                  styles.linkButton,
+                  { backgroundColor: theme.colorPrimary },
+                  (!linkUsername.trim() || isLoading) &&
+                    styles.linkButtonDisabled,
+                ]}
+                activeOpacity={0.7}
+              >
+                {isLoading ? (
+                  <>
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                    <Text style={styles.linkButtonText}>{t("common.loading")}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.linkButtonText}>{t("userLink.linkNow")}</Text>
                 )}
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
-                {showDatePicker && Platform.OS === "android" && (
-                  <DateTimePicker
-                    value={startDate || new Date()}
-                    mode="date"
-                    display="default"
-                    onChange={handleDateChange}
-                    maximumDate={new Date()}
-                  />
-                )}
-
-                <TouchableOpacity
-                  onPress={handleSave}
-                  disabled={!linkUsername.trim() || isLoading}
-                  style={[
-                    styles.linkButton,
-                    (!linkUsername.trim() || isLoading) &&
-                      styles.linkButtonDisabled,
-                  ]}
-                  activeOpacity={0.8}
-                >
-                  {isLoading ? (
-                    <>
-                      <ActivityIndicator color="#FFFFFF" size="small" />
-                      <Text style={styles.linkButtonText}>{t("common.loading")}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.linkButtonText}>{t("userLink.linkNow")}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.footerNote}>
-            <Text
-              style={[styles.footerText, { color: theme.colorMutedForeground }]}
-            >
-              {currentLinkedUser
-                ? t("userLink.footerLinked")
-                : t("userLink.footerUnlinked")}
-            </Text>
-          </View>
+        <View style={styles.footerNote}>
+          <Text
+            style={[styles.footerText, { color: theme.colorMutedForeground }]}
+          >
+            {currentLinkedUser
+              ? t("userLink.footerLinked")
+              : t("userLink.footerUnlinked")}
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -538,102 +563,90 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  content: {
-    paddingBottom: 20,
-  },
-  stickyHeader: {
+  header: {
     paddingTop: 12,
     paddingBottom: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  stickyRow: {
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  leftGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   iconBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   pageTitle: {
-    marginLeft: 12,
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "600",
   },
-  profileSection: {
-    marginHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 16,
+  },
+  profileCard: {
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 16,
   },
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    marginRight: 14,
   },
   profileInfo: {
     flex: 1,
   },
   profileName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   profileSlogan: {
-    fontSize: 12,
-  },
-  linkSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    fontSize: 13,
   },
   linkCard: {
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 16,
   },
   linkCardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  linkIconContainer: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
   },
   linkCardTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginLeft: 8,
+    fontSize: 17,
+    fontWeight: "600",
   },
   linkDescription: {
-    fontSize: 12,
+    fontSize: 13,
     marginBottom: 16,
+    lineHeight: 18,
   },
   linkedBox: {
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   linkedLabel: {
     fontSize: 12,
@@ -643,18 +656,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   partnerAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   partnerInfo: {
     flex: 1,
   },
   partnerName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
     marginBottom: 2,
   },
@@ -667,56 +680,57 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingTop: 12,
     marginTop: 4,
-    borderTopWidth: 1,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   dateInfoText: {
-    fontSize: 12,
+    fontSize: 13,
   },
   dateInfoValue: {
     fontWeight: "600",
   },
   unlinkButton: {
     width: "100%",
-    paddingVertical: 12,
-    backgroundColor: "#EF4444",
-    borderRadius: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
   },
   unlinkButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: "#FFFFFF",
   },
   inputGroup: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   label: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: "500",
     marginBottom: 8,
   },
   input: {
     width: "100%",
     paddingHorizontal: 16,
     paddingVertical: 12,
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 12,
-    fontSize: 14,
+    fontSize: 15,
   },
   datePickerButton: {
     width: "100%",
     paddingHorizontal: 16,
     paddingVertical: 12,
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
   datePickerText: {
-    fontSize: 14,
+    fontSize: 15,
   },
-  datePickerPlaceholder: {},
   datePickerModal: {
     flex: 1,
     justifyContent: "center",
@@ -732,10 +746,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   datePickerContainer: {
-    borderRadius: 16,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     paddingBottom: 20,
     width: "100%",
     maxWidth: 400,
+    zIndex: 10,
   },
   datePickerHeader: {
     flexDirection: "row",
@@ -743,32 +759,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   datePickerTitle: {
     fontSize: 16,
     fontWeight: "600",
   },
   datePickerCancelText: {
-    fontSize: 16,
+    fontSize: 15,
   },
   datePickerConfirmText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
-    color: "#F97316",
   },
   linkButton: {
     width: "100%",
-    paddingVertical: 12,
-    backgroundColor: "#F97316",
-    borderRadius: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
   },
   linkButtonDisabled: {
-    backgroundColor: "#CBD5E1",
+    opacity: 0.5,
   },
   linkButtonText: {
     color: "#FFFFFF",
@@ -776,11 +790,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   footerNote: {
-    marginTop: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
   },
   footerText: {
     fontSize: 12,
     textAlign: "center",
+    lineHeight: 18,
   },
 });

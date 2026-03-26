@@ -46,6 +46,7 @@ function SkeletonBox({
   height: number;
   style?: any;
 }) {
+  const { theme } = useThemeContext();
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -61,6 +62,7 @@ function SkeletonBox({
           duration: 1000,
           useNativeDriver: true,
         }),
+        Animated.delay(500),
       ])
     ).start();
   }, []);
@@ -76,7 +78,7 @@ function SkeletonBox({
         {
           width: width || "100%",
           height,
-          backgroundColor: "#E5E7EB",
+          backgroundColor: theme.colorMuted,
           borderRadius: 8,
           opacity,
         },

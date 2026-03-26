@@ -149,87 +149,89 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
   };
 
   const isFormValid = name.trim();
-  const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
+  const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.jpg");
 
   return (
     <SafeAreaView
       style={[styles.screen, { backgroundColor: theme.colorBackground }]}
     >
+      {/* Header */}
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: theme.colorBorder },
+        ]}
+      >
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
+            <ArrowLeft size={22} color={theme.colorForeground} />
+          </TouchableOpacity>
+          <Text style={[styles.pageTitle, { color: theme.colorForeground }]}>
+            {t("editProfile.title")}
+          </Text>
+          <View style={styles.iconBtn} />
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Sticky Header */}
+        {/* Avatar Section */}
+        <View style={styles.avatarSection}>
+          <View style={styles.avatarWrapper}>
+            <Image
+              source={avatarSource}
+              style={styles.avatar}
+              contentFit="cover"
+              transition={200}
+              cachePolicy="memory-disk"
+            />
+            {isUploading && (
+              <View style={styles.uploadingOverlay}>
+                <ActivityIndicator color="#FFFFFF" />
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity
+            onPress={handleAvatarUpload}
+            style={[
+              styles.uploadButton,
+              {
+                backgroundColor: theme.colorCard,
+                borderColor: theme.colorBorder,
+              },
+            ]}
+            activeOpacity={0.7}
+            disabled={isUploading}
+          >
+            <Upload size={16} color={theme.colorPrimary} />
+            <Text
+              style={[
+                styles.uploadButtonText,
+                { color: theme.colorMutedForeground },
+              ]}
+            >
+              {isUploading ? t("editProfile.uploading") : t("editProfile.changeAvatar")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Form Card */}
         <View
           style={[
-            styles.stickyHeader,
+            styles.formCard,
             {
-              backgroundColor: theme.colorBackground,
-              borderBottomColor: theme.colorBorder,
+              backgroundColor: theme.colorCard,
+              borderColor: theme.colorBorder,
             },
           ]}
         >
-          <View style={styles.stickyRow}>
-            <View style={styles.leftGroup}>
-              <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color={theme.colorForeground} />
-              </TouchableOpacity>
-              <Text
-                style={[styles.pageTitle, { color: theme.colorForeground }]}
-              >
-                {t("editProfile.title")}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Form Content */}
-        <View style={styles.formContent}>
-          {/* Avatar Section */}
-          <View style={styles.avatarSection}>
-            <View style={styles.avatarWrapper}>
-              <Image
-                source={avatarSource}
-                style={styles.avatar}
-                contentFit="cover"
-                transition={200}
-                cachePolicy="memory-disk"
-              />
-              {isUploading && (
-                <View style={styles.uploadingOverlay}>
-                  <ActivityIndicator color="#FFFFFF" />
-                </View>
-              )}
-            </View>
-
-            <TouchableOpacity
-              onPress={handleAvatarUpload}
-              style={[
-                styles.uploadButton,
-                {
-                  backgroundColor: theme.colorCard,
-                  borderColor: theme.colorBorder,
-                },
-              ]}
-              activeOpacity={0.7}
-              disabled={isUploading}
-            >
-              <Upload size={16} color="#F97316" />
-              <Text
-                style={[
-                  styles.uploadButtonText,
-                  { color: theme.colorMutedForeground },
-                ]}
-              >
-                {isUploading ? t("editProfile.uploading") : t("editProfile.changeAvatar")}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Name Input */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: theme.colorMutedForeground }]}>
-              {t("editProfile.name")} <Text style={styles.required}>*</Text>
+              {t("editProfile.name")} <Text style={{ color: theme.colorDestructive }}>*</Text>
             </Text>
             <TextInput
               value={name}
@@ -238,7 +240,7 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
               style={[
                 styles.input,
                 {
-                  backgroundColor: theme.colorCard,
+                  backgroundColor: theme.colorInputBackground,
                   borderColor: theme.colorBorder,
                   color: theme.colorForeground,
                 },
@@ -259,7 +261,7 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
               style={[
                 styles.input,
                 {
-                  backgroundColor: theme.colorCard,
+                  backgroundColor: theme.colorInputBackground,
                   borderColor: theme.colorBorder,
                   color: theme.colorForeground,
                 },
@@ -267,27 +269,28 @@ export function EditProfilePage({ onBack, onSave }: EditProfilePageProps) {
               placeholderTextColor={theme.colorMutedForeground}
             />
           </View>
-
-          {/* Save Button */}
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={!isFormValid || isLoading}
-            style={[
-              styles.saveButton,
-              (!isFormValid || isLoading) && styles.saveButtonDisabled,
-            ]}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <>
-                <ActivityIndicator color="#FFFFFF" size="small" />
-                <Text style={styles.saveButtonText}>{t("common.loading")}</Text>
-              </>
-            ) : (
-              <Text style={styles.saveButtonText}>{t("editProfile.save")}</Text>
-            )}
-          </TouchableOpacity>
         </View>
+
+        {/* Save Button */}
+        <TouchableOpacity
+          onPress={handleSubmit}
+          disabled={!isFormValid || isLoading}
+          style={[
+            styles.saveButton,
+            { backgroundColor: theme.colorPrimary },
+            (!isFormValid || isLoading) && styles.saveButtonDisabled,
+          ]}
+          activeOpacity={0.7}
+        >
+          {isLoading ? (
+            <>
+              <ActivityIndicator color="#FFFFFF" size="small" />
+              <Text style={styles.saveButtonText}>{t("common.loading")}</Text>
+            </>
+          ) : (
+            <Text style={styles.saveButtonText}>{t("editProfile.save")}</Text>
+          )}
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -297,43 +300,35 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  content: {
-    paddingBottom: 20,
-  },
-  stickyHeader: {
+  header: {
     paddingTop: 12,
     paddingBottom: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  stickyRow: {
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  leftGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   iconBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   pageTitle: {
-    marginLeft: 12,
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "600",
   },
-  formContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 16,
   },
   avatarSection: {
     alignItems: "center",
-    marginBottom: 24,
+    paddingVertical: 8,
   },
   avatarWrapper: {
     position: "relative",
@@ -361,43 +356,44 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 12,
   },
   uploadButtonText: {
     fontSize: 14,
   },
+  formCard: {
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 16,
+  },
   inputGroup: {
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: "500",
     marginBottom: 8,
-  },
-  required: {
-    color: "#EF4444",
   },
   input: {
     width: "100%",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 12,
-    fontSize: 14,
+    fontSize: 15,
   },
   saveButton: {
     width: "100%",
-    paddingVertical: 12,
-    backgroundColor: "#F97316",
+    paddingVertical: 14,
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    marginTop: 8,
   },
   saveButtonDisabled: {
-    backgroundColor: "#CBD5E1",
+    opacity: 0.5,
   },
   saveButtonText: {
     color: "#FFFFFF",

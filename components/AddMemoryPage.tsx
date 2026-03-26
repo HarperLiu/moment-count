@@ -34,9 +34,18 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export type EditMemoryData = {
+  id: string;
+  title: string;
+  details: string;
+  photos: string[]; // existing uploaded URLs
+  date: string; // ISO or yyyy-mm-dd
+};
+
 export function AddMemoryPage({
   onBack,
   onSave,
+  editData,
 }: {
   onBack: () => void;
   onSave: (memory: {
@@ -45,13 +54,18 @@ export function AddMemoryPage({
     photos: string[];
     date: Date;
   }) => void;
+  editData?: EditMemoryData;
 }) {
   const { theme } = useThemeContext();
   const { t } = useLanguageContext();
-  const [title, setTitle] = useState("");
-  const [details, setDetails] = useState("");
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [date, setDate] = useState<Date>(new Date());
+  const isEdit = !!editData;
+  const [title, setTitle] = useState(editData?.title || "");
+  const [details, setDetails] = useState(editData?.details || "");
+  // For edit mode, existing URLs are kept as-is; new local URIs will be uploaded
+  const [photos, setPhotos] = useState<string[]>(editData?.photos || []);
+  const [date, setDate] = useState<Date>(
+    editData?.date ? new Date(editData.date) : new Date()
+  );
   const [showPicker, setShowPicker] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -96,6 +110,9 @@ export function AddMemoryPage({
     setShowPicker(false);
   };
 
+  const isRemoteUrl = (uri: string) =>
+    uri.startsWith("http://") || uri.startsWith("https://");
+
   const handleSave = async () => {
     if (!(title.trim() || details.trim() || photos.length > 0)) return;
     if (saving) return;
@@ -103,6 +120,11 @@ export function AddMemoryPage({
     try {
       setSaving(true);
       for (const uri of photos) {
+        // In edit mode, keep existing remote URLs as-is
+        if (isRemoteUrl(uri)) {
+          uploaded.push(uri);
+          continue;
+        }
         try {
           // Resize & compress to reduce payload (avoid 413 on serverless)
           const manipulated = await ImageManipulator.manipulateAsync(
@@ -147,7 +169,7 @@ export function AddMemoryPage({
             <ArrowLeft size={20} color={theme.colorForeground} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: theme.colorForeground }]}>
-            {t("memory.addTitle")}
+            {isEdit ? t("memory.editTitle") : t("memory.addTitle")}
           </Text>
           <View style={{ width: 36 }} />
         </View>
@@ -236,7 +258,9 @@ export function AddMemoryPage({
                       {t("memory.selectDate")}
                     </Text>
                     <TouchableOpacity onPress={handleConfirmDate}>
-                      <Text style={styles.datePickerConfirmText}>{t("memory.confirm")}</Text>
+                      <Text style={[styles.datePickerConfirmText, { color: theme.colorPrimary }]}>
+                        {t("memory.confirm")}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                   <DateTimePicker
@@ -303,7 +327,7 @@ export function AddMemoryPage({
                 }}
               >
                 {photos.map((uri, idx) => (
-                  <View key={idx} style={styles.thumbBox}>
+                  <View key={idx} style={[styles.thumbBox, { backgroundColor: theme.colorMuted }]}>
                     <Image
                       source={{ uri }}
                       style={styles.thumb}
@@ -315,7 +339,7 @@ export function AddMemoryPage({
                       onPress={() => handleRemovePhoto(idx)}
                       style={styles.thumbRemove}
                     >
-                      <X size={12} color="#FFFFFF" />
+                      <X size={12} color={theme.colorPrimaryForeground} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -348,6 +372,7 @@ export function AddMemoryPage({
         <TouchableOpacity
           style={[
             styles.saveBtn,
+            { backgroundColor: theme.colorPrimary },
             (!(title.trim() || details.trim() || photos.length > 0) ||
               saving) && {
               opacity: 0.5,
@@ -359,8 +384,10 @@ export function AddMemoryPage({
           }
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            {saving && <ActivityIndicator size="small" color="#FFFFFF" />}
-            <Text style={styles.saveBtnText}>{t("memory.save")}</Text>
+            {saving && <ActivityIndicator size="small" color={theme.colorPrimaryForeground} />}
+            <Text style={[styles.saveBtnText, { color: theme.colorPrimaryForeground }]}>
+              {isEdit ? t("memory.update") : t("memory.save")}
+            </Text>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -419,7 +446,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 10,
     overflow: "hidden",
-    backgroundColor: "#F1F5F9",
+    backgroundColor: undefined,
     position: "relative",
   },
   thumb: { width: "100%", height: "100%" },
@@ -430,19 +457,18 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#000000B3",
+    backgroundColor: "rgba(0,0,0,0.7)",
     alignItems: "center",
     justifyContent: "center",
   },
   hint: { marginTop: 8, fontSize: 12, textAlign: "center" },
   saveBtn: {
     marginTop: 12,
-    backgroundColor: "#F97316",
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
   },
-  saveBtnText: { color: "#FFFFFF", fontWeight: "700" },
+  saveBtnText: { fontWeight: "700" },
   datePickerModal: {
     flex: 1,
     justifyContent: "center",
@@ -481,6 +507,5 @@ const styles = StyleSheet.create({
   datePickerConfirmText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#F97316",
   },
 });

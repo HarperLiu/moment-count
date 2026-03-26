@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "moment-count",
+    "name": "Infinity",
     "slug": "moment-count",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.jpg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/adaptive-icon.jpg",
       "resizeMode": "contain",
-      "backgroundColor": "#F5DEB3"
+      "backgroundColor": "#F8F9FC"
     },
     "ios": {
       "supportsTablet": false,
@@ -25,7 +25,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.jpg",
         "backgroundColor": "#F5DEB3"
       },
       "edgeToEdgeEnabled": true,

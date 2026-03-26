@@ -129,43 +129,45 @@ export function SettingsPage({
     },
   ];
 
-  const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.png");
+  const avatarSource = avatar ? { uri: avatar } : require("../assets/icon.jpg");
 
   return (
     <SafeAreaView
-      style={[styles.screen, { backgroundColor: theme.colorSecondary }]}
+      style={[styles.screen, { backgroundColor: theme.colorBackground }]}
     >
+      {/* Header */}
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: theme.colorBorder },
+        ]}
+      >
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
+            <ArrowLeft size={22} color={theme.colorForeground} />
+          </TouchableOpacity>
+          <Text style={[styles.pageTitle, { color: theme.colorForeground }]}>
+            {t("settings.title")}
+          </Text>
+          <View style={styles.iconBtn} />
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Sticky Header */}
-        <View
+        {/* Profile Card */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onNavigateToEditProfile}
           style={[
-            styles.stickyHeader,
+            styles.profileCard,
             {
-              backgroundColor: theme.colorSecondary,
-              borderBottomColor: theme.colorBorder,
+              backgroundColor: theme.colorCard,
+              borderColor: theme.colorBorder,
             },
           ]}
-        >
-          <View style={styles.stickyRow}>
-            <View style={styles.leftGroup}>
-              <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color={theme.colorForeground} />
-              </TouchableOpacity>
-              <Text
-                style={[styles.pageTitle, { color: theme.colorForeground }]}
-              >
-                {t("settings.title")}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Profile Section */}
-        <View
-          style={[styles.profileSection, { backgroundColor: theme.colorCard }]}
         >
           <View style={styles.profileRow}>
             <Image
@@ -192,82 +194,95 @@ export function SettingsPage({
                 </Text>
               )}
             </View>
+            <ChevronRight size={18} color={theme.colorMutedForeground} />
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Settings List */}
-        <View style={styles.settingsContainer}>
-          <View
-            style={[styles.settingsList, { backgroundColor: theme.colorCard }]}
-          >
-            {settingsItems.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <TouchableOpacity
-                  key={index}
+        <View
+          style={[
+            styles.settingsList,
+            {
+              backgroundColor: theme.colorCard,
+              borderColor: theme.colorBorder,
+            },
+          ]}
+        >
+          {settingsItems.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.settingsItem,
+                  index !== settingsItems.length - 1 && {
+                    borderBottomWidth: StyleSheet.hairlineWidth,
+                    borderBottomColor: theme.colorBorder,
+                  },
+                ]}
+                activeOpacity={0.7}
+                onPress={item.onClick}
+                disabled={!item.onClick}
+              >
+                <View
                   style={[
-                    styles.settingsItem,
-                    index !== settingsItems.length - 1 && {
-                      ...styles.settingsItemBorder,
-                      borderBottomColor: theme.colorBorder,
-                    },
+                    styles.iconContainer,
+                    { backgroundColor: theme.colorPrimary + "15" },
                   ]}
-                  activeOpacity={0.7}
-                  onPress={item.onClick}
-                  disabled={!item.onClick}
                 >
-                  <View style={styles.iconContainer}>
-                    <Icon size={20} color="#F97316" />
-                  </View>
-                  <View style={styles.itemContent}>
-                    <Text
-                      style={[
-                        styles.itemLabel,
-                        { color: theme.colorForeground },
-                      ]}
-                    >
-                      {item.label}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.itemDescription,
-                        { color: theme.colorMutedForeground },
-                      ]}
-                    >
-                      {item.description}
-                    </Text>
-                  </View>
-                  <ChevronRight size={20} color={theme.colorMutedForeground} />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                  <Icon size={18} color={theme.colorPrimary} />
+                </View>
+                <View style={styles.itemContent}>
+                  <Text
+                    style={[
+                      styles.itemLabel,
+                      { color: theme.colorForeground },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.itemDescription,
+                      { color: theme.colorMutedForeground },
+                    ]}
+                  >
+                    {item.description}
+                  </Text>
+                </View>
+                <ChevronRight size={18} color={theme.colorMutedForeground} />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-          {/* Logout Button */}
+        {/* Danger Zone */}
+        <View style={styles.dangerSection}>
           <TouchableOpacity
             onPress={onLogout}
             style={[
-              styles.logoutBtn,
+              styles.dangerBtn,
               {
                 backgroundColor: theme.colorCard,
-                borderColor: "#EF4444",
-                borderWidth: 1,
+                borderColor: theme.colorBorder,
+                borderWidth: StyleSheet.hairlineWidth,
               },
             ]}
             activeOpacity={0.7}
           >
-            <LogOut size={20} color="#EF4444" />
-            <Text style={styles.logoutText}>{t("settings.logout")}</Text>
+            <LogOut size={18} color={theme.colorDestructive} />
+            <Text style={[styles.logoutText, { color: theme.colorDestructive }]}>
+              {t("settings.logout")}
+            </Text>
           </TouchableOpacity>
 
-          {/* Delete Account Button */}
           <TouchableOpacity
             onPress={handleDeleteAccount}
             disabled={isDeleting}
             style={[
-              styles.deleteAccountBtn,
+              styles.dangerBtn,
               {
-                backgroundColor: "#EF4444",
+                backgroundColor: theme.colorDestructive,
                 opacity: isDeleting ? 0.6 : 1,
               },
             ]}
@@ -277,8 +292,10 @@ export function SettingsPage({
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
-                <Trash2 size={20} color="#FFFFFF" />
-                <Text style={styles.deleteAccountText}>{t("settings.deleteAccount")}</Text>
+                <Trash2 size={18} color="#FFFFFF" />
+                <Text style={styles.deleteAccountText}>
+                  {t("settings.deleteAccount")}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -292,145 +309,107 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  content: {
-    paddingBottom: 20,
-  },
-  stickyHeader: {
+  header: {
     paddingTop: 12,
     paddingBottom: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  stickyRow: {
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  leftGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   iconBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   pageTitle: {
-    marginLeft: 12,
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "600",
   },
-  profileSection: {
-    marginHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 16,
+  },
+  profileCard: {
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 16,
   },
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    marginRight: 14,
   },
   profileInfo: {
     flex: 1,
   },
   profileName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   profileSlogan: {
-    fontSize: 12,
-  },
-  settingsContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    fontSize: 13,
   },
   settingsList: {
-    borderRadius: 16,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   settingsItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  settingsItemBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   iconContainer: {
-    padding: 8,
-    backgroundColor: "#FFF7ED",
+    width: 34,
+    height: 34,
     borderRadius: 8,
-    marginRight: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
   },
   itemContent: {
     flex: 1,
   },
   itemLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "500",
     marginBottom: 2,
   },
   itemDescription: {
     fontSize: 12,
   },
-  logoutBtn: {
+  dangerSection: {
+    gap: 10,
+    marginTop: 8,
+  },
+  dangerBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginTop: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
   },
   logoutText: {
-    fontSize: 14,
-    color: "#EF4444",
+    fontSize: 15,
     fontWeight: "500",
-    marginLeft: 8,
-  },
-  deleteAccountBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginTop: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   deleteAccountText: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#FFFFFF",
     fontWeight: "500",
-    marginLeft: 8,
   },
 });

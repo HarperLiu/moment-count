@@ -49,60 +49,96 @@ const base = {
 
 export const lightTheme: Theme = {
   ...base,
-  colorBackground: "#ffffff",
-  colorForeground: "#0B0B0B",
-  colorCard: "#ffffff",
-  colorCardForeground: "#0B0B0B",
-  colorPopover: "#ffffff",
-  colorPopoverForeground: "#0B0B0B",
-  colorPrimary: "#030213",
-  colorPrimaryForeground: "#ffffff",
-  colorSecondary: "#f2f2fb",
-  colorSecondaryForeground: "#030213",
-  colorMuted: "#ececf0",
-  colorMutedForeground: "#717182",
-  colorAccent: "#e9ebef",
-  colorAccentForeground: "#030213",
-  colorDestructive: "#d4183d",
-  colorDestructiveForeground: "#ffffff",
-  colorBorder: "rgba(0,0,0,0.1)",
-  colorInput: "transparent",
-  colorInputBackground: "#f3f3f5",
-  colorSwitchBackground: "#cbced4",
-  colorRing: "#b5b5ff",
-  chart1: "#f3954a",
-  chart2: "#7db9ff",
-  chart3: "#6c7cff",
-  chart4: "#f7d36b",
-  chart5: "#f3b25c",
+
+  // ── 背景层次 ──
+  colorBackground:          "#F8F9FC",   // 极淡冷白，与 icon 白底呼应
+  colorForeground:          "#1C1F2E",   // 深蓝灰文字，比纯黑更柔和
+
+  // ── 卡片 & 弹出层（逐级提亮营造层次）──
+  colorCard:                "#FFFFFF",
+  colorCardForeground:      "#1C1F2E",
+  colorPopover:             "#FFFFFF",
+  colorPopoverForeground:   "#1C1F2E",
+
+  // ── 主色：薰衣草蓝紫（无限符号交汇色）──
+  colorPrimary:             "#7B8FD4",
+  colorPrimaryForeground:   "#FFFFFF",
+
+  // ── 次要色：极淡蓝灰 ──
+  colorSecondary:           "#EEF0F7",
+  colorSecondaryForeground: "#1C1F2E",
+
+  // ── 静默色：灰蓝 ──
+  colorMuted:               "#EAECF2",
+  colorMutedForeground:     "#8A8FA2",
+
+  // ── 强调色：蜜桃暖色（icon 右环底部）──
+  colorAccent:              "#F5EBE4",
+  colorAccentForeground:    "#1C1F2E",
+
+  // ── 危险色：柔和红 ──
+  colorDestructive:         "#E05C6E",
+  colorDestructiveForeground: "#FFFFFF",
+
+  // ── 边框 & 输入 ──
+  colorBorder:              "rgba(28, 31, 46, 0.08)",
+  colorInput:               "transparent",
+  colorInputBackground:     "#F0F1F6",
+  colorSwitchBackground:    "#C4C8D4",
+  colorRing:                "#B0BCE0",
+
+  // ── 图表色：从 icon 提取的 5 色彩虹 ──
+  chart1:                   "#8BBEE8",   // 柔蓝
+  chart2:                   "#8DD4B0",   // 薄荷绿
+  chart3:                   "#B0A0D4",   // 薰衣草紫
+  chart4:                   "#E8D88C",   // 暖黄
+  chart5:                   "#E8B090",   // 蜜桃色
 };
 
 export const darkTheme: Theme = {
   ...base,
-  colorBackground: "#232323",
-  colorForeground: "#ffffff",
-  colorCard: "#232323",
-  colorCardForeground: "#ffffff",
-  colorPopover: "#232323",
-  colorPopoverForeground: "#ffffff",
-  colorPrimary: "#ffffff",
-  colorPrimaryForeground: "#353535",
-  colorSecondary: "#444444",
-  colorSecondaryForeground: "#ffffff",
-  colorMuted: "#444444",
-  colorMutedForeground: "#b5b5b5",
-  colorAccent: "#444444",
-  colorAccentForeground: "#ffffff",
-  colorDestructive: "#8a3a2c",
-  colorDestructiveForeground: "#f3a28e",
-  colorBorder: "#444444",
-  colorInput: "#444444",
-  colorInputBackground: "#444444",
-  colorSwitchBackground: "#6f6f6f",
-  colorRing: "#707070",
-  chart1: "#6d7cff",
-  chart2: "#86e3a8",
-  chart3: "#f3b25c",
-  chart4: "#a688f5",
-  chart5: "#f0a38b",
+
+  // ── 背景层次：暖灰基调，与 claude.ai 一致 ──
+  colorBackground:          "#2b2a27",
+  colorForeground:          "#ECEEF4",
+
+  // ── 卡片 & 弹出层 ──
+  colorCard:                "#3b3a37",
+  colorCardForeground:      "#ECEEF4",
+  colorPopover:             "#403f3c",
+  colorPopoverForeground:   "#ECEEF4",
+
+  // ── 主色：提亮的薰衣草蓝紫 ──
+  colorPrimary:             "#99ABE0",
+  colorPrimaryForeground:   "#181B28",
+
+  // ── 次要色 ──
+  colorSecondary:           "#353432",
+  colorSecondaryForeground: "#ECEEF4",
+
+  // ── 静默色 ──
+  colorMuted:               "#353432",
+  colorMutedForeground:     "#9b9a97",
+
+  // ── 强调色：暗底暖色 ──
+  colorAccent:              "#403f3c",
+  colorAccentForeground:    "#ECEEF4",
+
+  // ── 危险色 ──
+  colorDestructive:         "#C04858",
+  colorDestructiveForeground: "#F8D0D6",
+
+  // ── 边框 & 输入 ──
+  colorBorder:              "#4a4945",
+  colorInput:               "#4a4945",
+  colorInputBackground:     "#353432",
+  colorSwitchBackground:    "#5a5955",
+  colorRing:                "#6878A8",
+
+  // ── 图表色：深底适配，略提饱和度 ──
+  chart1:                   "#78B4E0",   // 柔蓝
+  chart2:                   "#78C8A0",   // 薄荷绿
+  chart3:                   "#A090CC",   // 薰衣草紫
+  chart4:                   "#DCC878",   // 暖黄
+  chart5:                   "#D8A480",   // 蜜桃色
 };

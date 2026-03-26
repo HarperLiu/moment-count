@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Image,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
-import { ActivityIndicator } from "react-native";
-import { StatusBar } from "./StatusBar";
-import { Upload } from "lucide-react-native";
+import { Image } from "expo-image";
+import { ArrowLeft, User, Lock, Upload } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
-import { useTheme } from "../styles/useTheme";
+import { useThemeContext } from "../styles/ThemeContext";
 import { useLanguageContext } from "../styles/LanguageContext";
 
 interface RegisterPageProps {
@@ -26,7 +28,7 @@ interface RegisterPageProps {
 }
 
 export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
-  const theme = useTheme();
+  const { theme } = useThemeContext();
   const { t } = useLanguageContext();
   const [name, setName] = useState("");
   const [slogan, setSlogan] = useState("");
@@ -65,35 +67,34 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
   const isFormValid = name.trim() && password.trim();
 
   return (
-    <View style={[styles.container, { backgroundColor: "#F1F5F9" }]}>
-      <StatusBar />
-      {/* iPhone Container */}
-      <View
-        style={[styles.phoneContainer, { backgroundColor: theme.colorCard }]}
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colorBackground }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* Dynamic Island / Notch */}
-        <View style={styles.notch} />
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onLoginClick} style={styles.headerBtn}>
+            <ArrowLeft size={22} color={theme.colorForeground} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: theme.colorForeground }]}>
+            {t("register.title")}
+          </Text>
+          <View style={styles.headerBtn} />
+        </View>
 
-        {/* Scrollable Content */}
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { backgroundColor: theme.colorBackground },
-          ]}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Header Section */}
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require("../assets/app-logo.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={[styles.headline, { color: "#F97316" }]}>
-              {t("register.title")}
-            </Text>
+          {/* Logo */}
+          <View style={styles.logoSection}>
+            <Image
+              source={require("../assets/logo.png")}
+              style={styles.logo}
+              contentFit="contain"
+            />
             <Text
               style={[styles.subtitle, { color: theme.colorMutedForeground }]}
             >
@@ -101,126 +102,120 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
             </Text>
           </View>
 
-          {/* Form Content */}
-          <View style={styles.form}>
-            {/* Name Input */}
-            <View style={styles.inputGroup}>
-              <Text
-                style={[styles.label, { color: theme.colorMutedForeground }]}
-              >
-                {t("register.name")} <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder={t("register.namePlaceholder")}
-                placeholderTextColor={theme.colorMutedForeground}
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: theme.colorInputBackground,
-                    borderColor: theme.colorBorder,
-                    color: theme.colorForeground,
-                  },
-                ]}
-              />
-            </View>
-
-            {/* Password Input */}
-            <View style={styles.inputGroup}>
-              <Text
-                style={[styles.label, { color: theme.colorMutedForeground }]}
-              >
-                {t("register.password")} <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder={t("register.passwordPlaceholder")}
-                placeholderTextColor={theme.colorMutedForeground}
-                secureTextEntry
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: theme.colorInputBackground,
-                    borderColor: theme.colorBorder,
-                    color: theme.colorForeground,
-                  },
-                ]}
-              />
-            </View>
-
-            {/* Slogan Input */}
-            <View style={styles.inputGroup}>
-              <Text
-                style={[styles.label, { color: theme.colorMutedForeground }]}
-              >
-                {t("register.slogan")}
-              </Text>
-              <TextInput
-                value={slogan}
-                onChangeText={setSlogan}
-                placeholder={t("register.sloganPlaceholder")}
-                placeholderTextColor={theme.colorMutedForeground}
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: theme.colorInputBackground,
-                    borderColor: theme.colorBorder,
-                    color: theme.colorForeground,
-                  },
-                ]}
-              />
-            </View>
-
+          {/* Form Card */}
+          <View
+            style={[
+              styles.formCard,
+              {
+                backgroundColor: theme.colorCard,
+                borderColor: theme.colorBorder,
+              },
+            ]}
+          >
             {/* Avatar Upload */}
-            <View style={styles.inputGroup}>
-              <Text
-                style={[styles.label, { color: theme.colorMutedForeground }]}
-              >
-                {t("register.avatar")}
-              </Text>
-
-              {avatar && (
-                <View style={styles.avatarPreview}>
+            <View style={styles.avatarSection}>
+              <TouchableOpacity onPress={handleAvatarUpload}>
+                {avatar ? (
                   <Image
                     source={{ uri: avatar }}
                     style={styles.avatarImage}
-                    resizeMode="cover"
+                    contentFit="cover"
                   />
-                </View>
-              )}
-
-              <TouchableOpacity
-                onPress={handleAvatarUpload}
+                ) : (
+                  <View
+                    style={[
+                      styles.avatarPlaceholder,
+                      {
+                        backgroundColor: theme.colorInputBackground,
+                        borderColor: theme.colorBorder,
+                      },
+                    ]}
+                  >
+                    <Upload size={22} color={theme.colorMutedForeground} />
+                  </View>
+                )}
+              </TouchableOpacity>
+              <Text
                 style={[
-                  styles.uploadArea,
+                  styles.avatarLabel,
+                  { color: theme.colorMutedForeground },
+                ]}
+              >
+                {t("register.avatar")}
+              </Text>
+            </View>
+
+            {/* Name */}
+            <View style={styles.inputGroup}>
+              <Text
+                style={[styles.label, { color: theme.colorMutedForeground }]}
+              >
+                {t("register.name")} <Text style={{ color: theme.colorDestructive }}>*</Text>
+              </Text>
+              <View
+                style={[
+                  styles.inputRow,
                   {
-                    borderColor: theme.colorBorder,
                     backgroundColor: theme.colorInputBackground,
+                    borderColor: theme.colorBorder,
                   },
                 ]}
               >
-                <Upload size={24} color={theme.colorMutedForeground} />
-                <Text
-                  style={[
-                    styles.uploadText,
-                    { color: theme.colorMutedForeground },
-                  ]}
-                >
-                  {t("register.uploadAvatar")}
-                </Text>
-              </TouchableOpacity>
+                <User size={16} color={theme.colorMutedForeground} />
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  placeholder={t("register.namePlaceholder")}
+                  placeholderTextColor={theme.colorMutedForeground}
+                  style={[styles.input, { color: theme.colorForeground }]}
+                  autoCapitalize="none"
+                />
+              </View>
             </View>
 
-            {/* Error Message */}
+            {/* Password */}
+            <View style={styles.inputGroup}>
+              <Text
+                style={[styles.label, { color: theme.colorMutedForeground }]}
+              >
+                {t("register.password")} <Text style={{ color: theme.colorDestructive }}>*</Text>
+              </Text>
+              <View
+                style={[
+                  styles.inputRow,
+                  {
+                    backgroundColor: theme.colorInputBackground,
+                    borderColor: theme.colorBorder,
+                  },
+                ]}
+              >
+                <Lock size={16} color={theme.colorMutedForeground} />
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder={t("register.passwordPlaceholder")}
+                  placeholderTextColor={theme.colorMutedForeground}
+                  secureTextEntry
+                  style={[styles.input, { color: theme.colorForeground }]}
+                />
+              </View>
+            </View>
+
+            {/* Error */}
             {error && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
+              <View
+                style={[
+                  styles.errorContainer,
+                  { backgroundColor: theme.colorDestructive + "15" },
+                ]}
+              >
+                <Text style={{ fontSize: 13, color: theme.colorDestructive, textAlign: "center" }}>
+                  {error}
+                </Text>
               </View>
             )}
 
-            {/* Info Text */}
+            {/* Info */}
             {!error && (
               <Text
                 style={[styles.infoText, { color: theme.colorMutedForeground }]}
@@ -229,13 +224,13 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
               </Text>
             )}
 
-            {/* Submit Button */}
+            {/* Submit */}
             <TouchableOpacity
               onPress={handleSubmit}
               style={[
                 styles.submitBtn,
-                { backgroundColor: "#F97316" },
-                (!isFormValid || submitting) && styles.submitBtnDisabled,
+                { backgroundColor: theme.colorPrimary },
+                (!isFormValid || submitting) && { opacity: 0.5 },
               ]}
               disabled={!isFormValid || submitting}
             >
@@ -248,167 +243,148 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
                 </Text>
               </View>
             </TouchableOpacity>
+          </View>
 
-            {/* Login Link */}
-            <View style={styles.loginContainer}>
-              <Text
-                style={[
-                  styles.loginText,
-                  { color: theme.colorMutedForeground },
-                ]}
-              >
-                {t("register.alreadyHaveAccount")}
+          {/* Login Link */}
+          <View style={styles.linkContainer}>
+            <Text
+              style={[styles.linkText, { color: theme.colorMutedForeground }]}
+            >
+              {t("register.alreadyHaveAccount")}
+            </Text>
+            <TouchableOpacity onPress={onLoginClick}>
+              <Text style={[styles.linkAction, { color: theme.colorPrimary }]}>
+                {t("register.loginLink")}
               </Text>
-              <TouchableOpacity onPress={onLoginClick}>
-                <Text style={[styles.loginLink, { color: "#F97316" }]}>
-                  {t("register.loginLink")}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           </View>
         </ScrollView>
-      </View>
-    </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  phoneContainer: {
-    flex: 1,
-    position: "relative",
-  },
-  notch: {
-    position: "absolute",
-    top: 0,
-    left: "50%",
-    marginLeft: -64,
-    width: 128,
-    height: 28,
-    backgroundColor: "#000",
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    zIndex: 20,
-  },
-  scrollContent: {
-    paddingHorizontal: 32,
-    paddingBottom: 24,
-  },
   header: {
-    paddingTop: 96,
-    paddingBottom: 32,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  logoContainer: {
+  headerBtn: {
+    width: 36,
+    height: 36,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+  logoSection: {
+    alignItems: "center",
+    paddingTop: 12,
+    paddingBottom: 24,
   },
   logo: {
-    width: 100,
-    height: 96,
-  },
-  headline: {
-    fontSize: 22,
-    fontWeight: "600",
-    marginBottom: 8,
-    letterSpacing: -0.2,
+    width: 80,
+    height: 76,
+    marginBottom: 12,
   },
   subtitle: {
     fontSize: 14,
     textAlign: "center",
   },
-  form: {
-    paddingBottom: 24,
+  formCard: {
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 20,
+  },
+  avatarSection: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  avatarImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 18,
+  },
+  avatarPlaceholder: {
+    width: 72,
+    height: 72,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarLabel: {
+    fontSize: 12,
+    marginTop: 6,
   },
   inputGroup: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
     marginBottom: 6,
+    fontWeight: "500",
   },
-  required: {
-    color: "#DC2626",
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    gap: 10,
   },
   input: {
-    width: "100%",
-    paddingHorizontal: 12,
+    flex: 1,
     paddingVertical: 12,
-    fontSize: 14,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  avatarPreview: {
-    marginBottom: 8,
-    alignItems: "center",
-  },
-  avatarImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  uploadArea: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    height: 80,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderRadius: 8,
-    gap: 4,
-  },
-  uploadText: {
-    fontSize: 12,
+    fontSize: 15,
   },
   errorContainer: {
-    backgroundColor: "#FEE2E2",
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 12,
-    marginTop: 8,
     marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#DC2626",
-    textAlign: "center",
   },
   infoText: {
     fontSize: 12,
     textAlign: "center",
-    marginTop: 8,
     marginBottom: 16,
   },
   submitBtn: {
-    width: "100%",
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  submitBtnDisabled: {
-    opacity: 0.5,
-  },
   submitBtnText: {
     color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "600",
   },
-  btnRow: { flexDirection: "row", alignItems: "center", gap: 8 as any },
-  loginContainer: {
+  btnRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  linkContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 24,
   },
-  loginText: {
+  linkText: {
     fontSize: 14,
   },
-  loginLink: {
+  linkAction: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
   },
 });

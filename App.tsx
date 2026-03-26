@@ -1,33 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Animated,
+  SafeAreaView,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { LogOut, Settings } from "lucide-react-native";
+import { Settings, Heart } from "lucide-react-native";
+import { Image } from "expo-image";
 
-import { InfoCards } from "./components/InfoCards";
-import { MemoriesSection } from "./components/MemoriesSection";
-import { ReceiptItems } from "./components/ReceiptItems";
+import { MapComponent } from "./components/MapComponent";
 import { MemoryListPage } from "./components/MemoryListPage";
-import { CookingReceiptListPage } from "./components/CookingReceiptListPage";
 import { AddMemoryPage } from "./components/AddMemoryPage";
-import { AddReceiptPage } from "./components/AddReceiptPage";
-import { AuthPage } from "./components/AuthPage";
 import { WelcomePage } from "./components/WelcomePage";
 import { RegisterPage } from "./components/RegisterPage";
 import { LoginPage } from "./components/LoginPage";
 import { api } from "./app/api";
 import { UserInfo } from "./components/UserInfo";
+import { AnniversaryCard } from "./components/AnniversaryCard";
+import { DailyQACard } from "./components/DailyQACard";
+import { CapsuleCard } from "./components/CapsuleCard";
+import { BottomNavBar } from "./components/BottomNavBar";
 import { SettingsPage } from "./components/SettingsPage";
 import { UserLinkPage } from "./components/UserLinkPage";
 import { EditProfilePage } from "./components/EditProfilePage";
 import { AboutPage } from "./components/AboutPage";
+import { AnniversaryPage } from "./components/AnniversaryPage";
+import { DailyQAPage } from "./components/DailyQAPage";
 import { AppearancePage } from "./components/AppearancePage";
+import { CapsuleListPage } from "./components/CapsuleListPage";
+import { TruthOrDarePage } from "./components/TruthOrDarePage";
+import { ManageQuestionsPage } from "./components/ManageQuestionsPage";
+import { AddCapsulePage } from "./components/AddCapsulePage";
+import { CapsuleDetailPage } from "./components/CapsuleDetailPage";
+import { WishListPage } from "./components/WishListPage";
+import { AddWishPage } from "./components/AddWishPage";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider, useThemeContext } from "./styles/ThemeContext";
 import { LanguageProvider, useLanguageContext } from "./styles/LanguageContext";
 
@@ -35,12 +46,22 @@ type PageKey =
   | "welcome"
   | "login"
   | "register"
-  | "auth"
   | "home"
   | "memories"
-  | "cooking"
   | "add-memory"
-  | "add-receipt"
+  | "edit-memory"
+  | "capsules"
+  | "add-capsule"
+  | "capsule-detail"
+  | "wishlist"
+  | "add-wish"
+  | "edit-wish"
+  | "truth-or-dare"
+  | "manage-questions"
+  | "anniversaries"
+  | "add-anniversary"
+  | "edit-anniversary"
+  | "daily-qa"
   | "settings"
   | "user-link"
   | "edit-profile"
@@ -49,11 +70,13 @@ type PageKey =
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </LanguageProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <LanguageProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </LanguageProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -62,12 +85,42 @@ function AppContent() {
   const { t } = useLanguageContext();
   const [currentPage, setCurrentPage] = useState<PageKey>("welcome");
   const [bootstrapped, setBootstrapped] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ uuid: string; name: string; avatar: string } | null>(null);
   const [linkedUser, setLinkedUser] = useState<string | null>(null);
+  const [linkedUserProfile, setLinkedUserProfile] = useState<{
+    name: string;
+    avatar: string;
+  } | null>(null);
+  const [linkKey, setLinkKey] = useState<string | null>(null);
   const [relationshipStartDate, setRelationshipStartDate] =
     useState<Date | null>(null);
-  const [hasMemories, setHasMemories] = useState(false);
-  const [hasReceipts, setHasReceipts] = useState(false);
   const [returnToPage, setReturnToPage] = useState<PageKey>("home");
+  const [editMemoryData, setEditMemoryData] = useState<{
+    id: string;
+    title: string;
+    details: string;
+    photos: string[];
+    date: string;
+  } | null>(null);
+  const [memoryRefreshKey, setMemoryRefreshKey] = useState(0);
+  const [selectedCapsuleId, setSelectedCapsuleId] = useState<string | null>(null);
+  const [editWishData, setEditWishData] = useState<any>(null);
+
+  // Page transition fade animation
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const prevPageRef = useRef<PageKey>(currentPage);
+
+  useEffect(() => {
+    if (prevPageRef.current !== currentPage) {
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+      prevPageRef.current = currentPage;
+    }
+  }, [currentPage]);
 
   useEffect(() => {
     (async () => {
@@ -83,7 +136,11 @@ function AppContent() {
         const uuid = await AsyncStorage.getItem("user:uuid");
         const loginAtStr = await AsyncStorage.getItem("user:loginAt");
         const linkedUserStr = await AsyncStorage.getItem("user:linkedUser");
+        const linkedUserProfileStr = await AsyncStorage.getItem(
+          "user:linkedUserProfile"
+        );
         const linkId = await AsyncStorage.getItem("user:linkId");
+        if (linkId) setLinkKey(linkId);
         const now = Date.now();
         const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
         const within7Days =
@@ -103,6 +160,9 @@ function AppContent() {
                 "user:profile",
                 JSON.stringify(profile)
               );
+              setUserProfile({ uuid: profile.uuid, name: profile.name, avatar: profile.avatar });
+            } else {
+              setUserProfile({ uuid, name: "", avatar: "" });
             }
             // Fetch relationship info using linkId
             if (linkId) {
@@ -114,6 +174,18 @@ function AppContent() {
                     new Date(relationshipInfo.relationshipStartDate)
                   );
                 }
+                // Refresh partner profile from server
+                if (relationshipInfo.linkedUserUuid) {
+                  const partnerData = await api.getUserByUuid(relationshipInfo.linkedUserUuid);
+                  if (partnerData) {
+                    const freshProfile = {
+                      name: partnerData.name || linkedUserStr || "",
+                      avatar: partnerData.avatar || "",
+                    };
+                    setLinkedUserProfile(freshProfile);
+                    await AsyncStorage.setItem("user:linkedUserProfile", JSON.stringify(freshProfile));
+                  }
+                }
               } else {
                 // linkId is outdated, clear it
                 await AsyncStorage.removeItem("user:linkId");
@@ -122,8 +194,49 @@ function AppContent() {
                 setRelationshipStartDate(null);
               }
             }
-          } catch {}
+          } catch {
+            // Server fetch failed; load from stored profile
+            const storedProfile = await AsyncStorage.getItem("user:profile");
+            if (storedProfile) {
+              try {
+                const p = JSON.parse(storedProfile);
+                setUserProfile({ uuid: p.uuid || uuid, name: p.name || "", avatar: p.avatar || "" });
+              } catch {}
+            } else {
+              setUserProfile({ uuid, name: "", avatar: "" });
+            }
+          }
+          // Register push token for notifications
+          try {
+            const Notifications = require("expo-notifications");
+            const { status: existingStatus } =
+              await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            if (existingStatus !== "granted") {
+              const { status } =
+                await Notifications.requestPermissionsAsync();
+              finalStatus = status;
+            }
+            if (finalStatus === "granted") {
+              const tokenData =
+                await Notifications.getDevicePushTokenAsync();
+              if (tokenData?.data) {
+                await api.registerPushToken({
+                  userId: uuid,
+                  token: tokenData.data,
+                });
+              }
+            }
+          } catch (e) {
+            // Push token registration is best-effort; don't block app startup
+            console.warn("Push token registration failed:", e);
+          }
           setLinkedUser(linkedUserStr);
+          if (linkedUserProfileStr) {
+            try {
+              setLinkedUserProfile(JSON.parse(linkedUserProfileStr));
+            } catch {}
+          }
           setCurrentPage("home");
         } else {
           setCurrentPage("welcome");
@@ -160,34 +273,40 @@ function AppContent() {
         date: `${y}-${m}-${d}`,
         userId,
       });
+      setMemoryRefreshKey((k) => k + 1);
     } finally {
       setCurrentPage(returnToPage);
     }
   };
 
-  const handleSaveReceipt = async (receipt: {
+  const handleUpdateMemory = async (memory: {
     title: string;
     details: string;
     photos: string[];
-    timeCost: { hours: number; minutes: number };
+    date: Date;
   }) => {
+    if (!editMemoryData) return;
     try {
-      // Get user UUID
       const AsyncStorage = require("@react-native-async-storage/async-storage")
         .default as {
         getItem: (k: string) => Promise<string | null>;
       };
       const userId = (await AsyncStorage.getItem("user:uuid")) || "";
 
-      await api.createReceipt({
-        title: receipt.title,
-        details: receipt.details,
-        photos: receipt.photos,
-        timeCost: receipt.timeCost,
+      const y = memory.date.getFullYear();
+      const m = String(memory.date.getMonth() + 1).padStart(2, "0");
+      const d = String(memory.date.getDate()).padStart(2, "0");
+      await api.updateMemory(editMemoryData.id, {
+        title: memory.title,
+        details: memory.details,
+        photos: memory.photos,
+        date: `${y}-${m}-${d}`,
         userId,
       });
+      setMemoryRefreshKey((k) => k + 1);
     } finally {
-      setCurrentPage(returnToPage);
+      setEditMemoryData(null);
+      setCurrentPage("memories");
     }
   };
 
@@ -201,8 +320,10 @@ function AppContent() {
       await AsyncStorage.removeItem("user:profile");
       await AsyncStorage.removeItem("user:loginAt");
       await AsyncStorage.removeItem("user:linkedUser");
+      await AsyncStorage.removeItem("user:linkedUserProfile");
       await AsyncStorage.removeItem("user:linkId");
       setLinkedUser(null);
+      setLinkedUserProfile(null);
       setRelationshipStartDate(null);
       setCurrentPage("welcome");
     } catch (e) {
@@ -227,8 +348,10 @@ function AppContent() {
     await AsyncStorage.removeItem("user:profile");
     await AsyncStorage.removeItem("user:loginAt");
     await AsyncStorage.removeItem("user:linkedUser");
+    await AsyncStorage.removeItem("user:linkedUserProfile");
     await AsyncStorage.removeItem("user:linkId");
     setLinkedUser(null);
+    setLinkedUserProfile(null);
     setRelationshipStartDate(null);
     setCurrentPage("welcome");
   };
@@ -243,20 +366,46 @@ function AppContent() {
         .default as {
         setItem: (k: string, v: string) => Promise<void>;
         removeItem: (k: string) => Promise<void>;
+        getItem: (k: string) => Promise<string | null>;
       };
       if (username && linkKey) {
         // Link: save linkId and username, set start date in state
         await AsyncStorage.setItem("user:linkId", linkKey);
+        setLinkKey(linkKey);
         await AsyncStorage.setItem("user:linkedUser", username);
         setLinkedUser(username);
         if (startDate) {
           setRelationshipStartDate(startDate);
         }
+        // Fetch partner avatar
+        const uuid = await AsyncStorage.getItem("user:uuid");
+        if (uuid) {
+          const relationshipInfo = await api.getRelationship(uuid);
+          if (relationshipInfo?.linkedUserUuid) {
+            const partnerData = await api.getUserByUuid(
+              relationshipInfo.linkedUserUuid
+            );
+            if (partnerData) {
+              const partnerProfile = {
+                name: partnerData.name || username,
+                avatar: partnerData.avatar || "",
+              };
+              setLinkedUserProfile(partnerProfile);
+              await AsyncStorage.setItem(
+                "user:linkedUserProfile",
+                JSON.stringify(partnerProfile)
+              );
+            }
+          }
+        }
       } else {
         // Unlink: clear linkId, username, and start date
         await AsyncStorage.removeItem("user:linkId");
+        setLinkKey(null);
         await AsyncStorage.removeItem("user:linkedUser");
+        await AsyncStorage.removeItem("user:linkedUserProfile");
         setLinkedUser(null);
+        setLinkedUserProfile(null);
         setRelationshipStartDate(null);
       }
     } catch (e) {
@@ -296,6 +445,7 @@ function AppContent() {
       await AsyncStorage.setItem("user:uuid", profile.uuid);
       await AsyncStorage.setItem("user:profile", JSON.stringify(profile));
       await AsyncStorage.setItem("user:loginAt", String(Date.now()));
+      setUserProfile({ uuid: profile.uuid, name: profile.name, avatar: profile.avatar });
 
       // Fetch relationship info (unlikely for new user, but good to check)
       try {
@@ -337,6 +487,7 @@ function AppContent() {
       await AsyncStorage.setItem("user:uuid", profile.uuid);
       await AsyncStorage.setItem("user:profile", JSON.stringify(profile));
       await AsyncStorage.setItem("user:loginAt", String(Date.now()));
+      setUserProfile({ uuid: profile.uuid, name: profile.name, avatar: profile.avatar });
 
       // Fetch and cache relationship info
       try {
@@ -344,18 +495,28 @@ function AppContent() {
         if (relationshipInfo && relationshipInfo.linkKey) {
           // Only cache linkId, fetch other data on demand
           await AsyncStorage.setItem("user:linkId", relationshipInfo.linkKey);
+          setLinkKey(relationshipInfo.linkKey);
 
           // Set relationship data in state
           if (relationshipInfo.linkedUserUuid) {
-            // Get linked user's name
+            // Get linked user's profile (name + avatar)
             const linkedUserData = await api.getUserByUuid(
               relationshipInfo.linkedUserUuid
             );
             if (linkedUserData) {
-              setLinkedUser(linkedUserData.name || "");
+              const partnerProfile = {
+                name: linkedUserData.name || "",
+                avatar: linkedUserData.avatar || "",
+              };
+              setLinkedUser(partnerProfile.name);
+              setLinkedUserProfile(partnerProfile);
               await AsyncStorage.setItem(
                 "user:linkedUser",
-                linkedUserData.name || ""
+                partnerProfile.name
+              );
+              await AsyncStorage.setItem(
+                "user:linkedUserProfile",
+                JSON.stringify(partnerProfile)
               );
             }
           }
@@ -457,6 +618,20 @@ function AppContent() {
     );
   }
 
+  // --- Bottom nav handler (shared by home + first-level pages) ---
+  const handleBottomNav = (tab: "memories" | "capsules" | "home" | "wishlist" | "truth-or-dare") => {
+    setCurrentPage(tab);
+  };
+
+  // Determine the active bottom tab for first-level pages
+  const activeBottomTab: "memories" | "capsules" | "home" | "wishlist" | "truth-or-dare" =
+    currentPage === "memories" ? "memories"
+    : currentPage === "capsules" ? "capsules"
+    : currentPage === "wishlist" ? "wishlist"
+    : currentPage === "truth-or-dare" ? "truth-or-dare"
+    : "home";
+
+  // --- Second-level pages (no bottom nav, use back navigation) ---
   if (currentPage === "add-memory") {
     return (
       <AddMemoryPage
@@ -466,135 +641,253 @@ function AppContent() {
     );
   }
 
-  if (currentPage === "add-receipt") {
+  if (currentPage === "edit-memory" && editMemoryData) {
     return (
-      <AddReceiptPage
-        onBack={() => setCurrentPage(returnToPage)}
-        onSave={handleSaveReceipt}
-      />
-    );
-  }
-
-  if (currentPage === "memories") {
-    return (
-      <MemoryListPage
-        onBack={() => setCurrentPage("home")}
-        onAddMemory={() => {
-          setReturnToPage("memories");
-          setCurrentPage("add-memory");
+      <AddMemoryPage
+        onBack={() => {
+          setEditMemoryData(null);
+          setCurrentPage("memories");
         }}
+        onSave={handleUpdateMemory}
+        editData={editMemoryData}
       />
     );
   }
 
-  if (currentPage === "cooking") {
+  if (currentPage === "add-capsule" && linkedUser) {
     return (
-      <CookingReceiptListPage
-        onBack={() => setCurrentPage("home")}
-        onAddReceipt={() => {
-          setReturnToPage("cooking");
-          setCurrentPage("add-receipt");
-        }}
+      <AddCapsulePage
+        onBack={() => setCurrentPage("capsules")}
+        userId={userProfile?.uuid || ""}
+        linkedUser={linkedUser}
+        linkKey={linkKey || ""}
       />
     );
   }
 
-  return (
-    <View style={[styles.root, { backgroundColor: theme.colorBackground }]}>
-      <ExpoStatusBar style="dark" backgroundColor="#E5E7EB" />
-      <View
-        style={[styles.phoneContainer, { backgroundColor: theme.colorCard }]}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Hero Image */}
-          <View style={styles.heroWrapper}>
+  if (currentPage === "capsule-detail" && selectedCapsuleId) {
+    return (
+      <CapsuleDetailPage
+        onBack={() => {
+          setSelectedCapsuleId(null);
+          setCurrentPage("capsules");
+        }}
+        capsuleId={selectedCapsuleId}
+        userId={userProfile?.uuid || ""}
+      />
+    );
+  }
+
+  if (currentPage === "add-wish" || currentPage === "edit-wish") {
+    return (
+      <AddWishPage
+        onBack={() => {
+          setEditWishData(null);
+          setCurrentPage("wishlist");
+        }}
+        userId={userProfile?.uuid || ""}
+        linkKey={linkKey || ""}
+        editData={currentPage === "edit-wish" ? editWishData : null}
+      />
+    );
+  }
+
+  if (currentPage === "manage-questions") {
+    return (
+      <ManageQuestionsPage
+        onBack={() => setCurrentPage("truth-or-dare")}
+        userId={userProfile?.uuid || ""}
+        linkKey={linkKey}
+      />
+    );
+  }
+
+  if (currentPage === "anniversaries") {
+    return (
+      <AnniversaryPage
+        onBack={() => setCurrentPage("home")}
+        relationshipStartDate={relationshipStartDate}
+        userId={userProfile?.uuid || ""}
+        linkedUser={linkedUser}
+      />
+    );
+  }
+
+  if (currentPage === "add-anniversary" || currentPage === "edit-anniversary") {
+    return (
+      <View style={[styles.placeholderPage, { backgroundColor: theme.colorBackground }]}>
+        <TouchableOpacity onPress={() => setCurrentPage("anniversaries")} style={styles.backBtn}>
+          <Text style={{ color: theme.colorPrimary, fontSize: 16 }}>← Back</Text>
+        </TouchableOpacity>
+        <Text style={[styles.placeholderTitle, { color: theme.colorForeground }]}>
+          Anniversary
+        </Text>
+        <Text style={{ color: theme.colorMutedForeground }}>{t("common.moreIsComing")}</Text>
+      </View>
+    );
+  }
+
+  if (currentPage === "daily-qa") {
+    return (
+      <DailyQAPage
+        onBack={() => setCurrentPage("home")}
+        user={userProfile}
+        linkedUser={linkedUser}
+        linkKey={linkKey}
+      />
+    );
+  }
+
+  // --- All tab pages share the same layout: content + BottomNavBar ---
+  const renderTabContent = () => {
+    if (currentPage === "memories") {
+      return (
+        <MemoryListPage
+          onBack={() => setCurrentPage("home")}
+          onAddMemory={() => {
+            setReturnToPage("memories");
+            setCurrentPage("add-memory");
+          }}
+          onEditMemory={(memory) => {
+            setEditMemoryData(memory);
+            setCurrentPage("edit-memory");
+          }}
+          refreshKey={memoryRefreshKey}
+          linkedUser={linkedUser}
+        />
+      );
+    }
+
+    if (currentPage === "capsules") {
+      return (
+        <CapsuleListPage
+          onBack={() => setCurrentPage("home")}
+          onAddCapsule={() => setCurrentPage("add-capsule")}
+          onOpenCapsule={(id) => {
+            setSelectedCapsuleId(id);
+            setCurrentPage("capsule-detail");
+          }}
+          userId={userProfile?.uuid || ""}
+          linkKey={linkKey}
+          linkedUser={linkedUser}
+        />
+      );
+    }
+
+    if (currentPage === "wishlist") {
+      return (
+        <WishListPage
+          onBack={() => setCurrentPage("home")}
+          onAddWish={() => setCurrentPage("add-wish")}
+          onEditWish={(wish) => {
+            setEditWishData(wish);
+            setCurrentPage("edit-wish");
+          }}
+          userId={userProfile?.uuid || ""}
+          linkKey={linkKey}
+          linkedUser={linkedUser}
+        />
+      );
+    }
+
+    if (currentPage === "truth-or-dare") {
+      return (
+        <TruthOrDarePage
+          onBack={() => setCurrentPage("home")}
+          onManageQuestions={() => setCurrentPage("manage-questions")}
+          userId={userProfile?.uuid || ""}
+          linkKey={linkKey}
+          linkedUser={linkedUser}
+          linkedUserProfile={linkedUserProfile}
+        />
+      );
+    }
+
+    // Home
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colorBackground }}>
+        <ExpoStatusBar style={isDark ? "light" : "dark"} />
+        {/* Top Bar: Logo + Settings */}
+        <View style={styles.topBar}>
+          <View style={styles.logoRow}>
             <Image
-              source={require("./assets/background.jpg")}
-              resizeMode="cover"
-              style={styles.heroImage}
+              source={require("./assets/logo.png")}
+              style={styles.logoIcon}
+              contentFit="cover"
             />
-            {/* Settings Button (top-right) */}
-            <TouchableOpacity
-              onPress={() => setCurrentPage("settings")}
-              style={[
-                styles.settingsBtn,
-                { backgroundColor: theme.colorCard + "CC" },
-              ]}
+            <Text
+              style={[styles.logoText, { color: theme.colorForeground }]}
             >
-              <Settings size={18} color={theme.colorForeground} />
-            </TouchableOpacity>
+              {t("common.appName")}
+            </Text>
           </View>
+          <TouchableOpacity
+            onPress={() => setCurrentPage("settings")}
+            style={[
+              styles.settingsBtn,
+              { backgroundColor: theme.colorCard },
+            ]}
+          >
+            <Settings size={18} color={theme.colorForeground} />
+          </TouchableOpacity>
+        </View>
 
-          {/* User Info */}
+        {/* Main scrollable content */}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* 1. UserInfo */}
           <UserInfo
             linkedUser={linkedUser}
+            linkedUserProfile={linkedUserProfile}
             onLinkClick={() => setCurrentPage("user-link")}
           />
 
-          {/* Info Cards */}
-          <InfoCards relationshipStartDate={relationshipStartDate} />
-
-          {/* Memories Section */}
+          {/* 2. Location Sharing — Map */}
           <View style={styles.sectionWrapper}>
-            <View style={styles.sectionHeader}>
-              <Text
-                style={[styles.sectionTitle, { color: theme.colorForeground }]}
-              >
-                {t("memory.title")}
-              </Text>
-              {hasMemories && (
-                <TouchableOpacity onPress={() => setCurrentPage("memories")}>
-                  <Text
-                    style={[
-                      styles.linkText,
-                      { color: theme.colorMutedForeground },
-                    ]}
-                  >
-                    {t("memory.seeMore")}
-                  </Text>
-                </TouchableOpacity>
-              )}
+            <View style={styles.mapContainer}>
+              <MapComponent />
             </View>
-            <MemoriesSection
-              onAddMemory={() => {
-                setReturnToPage("home");
-                setCurrentPage("add-memory");
-              }}
-              onDataLoad={setHasMemories}
+          </View>
+
+          {/* 3. Anniversary Reminder */}
+          <View style={styles.sectionWrapper}>
+            <AnniversaryCard
+              relationshipStartDate={relationshipStartDate}
+              onPress={() => setCurrentPage("anniversaries")}
+              userId={userProfile?.uuid || ""}
             />
           </View>
 
-          {/* Cooking Receipt Section */}
-          <View style={styles.sectionWrapperBottom}>
-            <View style={styles.sectionHeader}>
-              <Text
-                style={[styles.sectionTitle, { color: theme.colorForeground }]}
-              >
-                {t("receipt.title")}
-              </Text>
-              {hasReceipts && (
-                <TouchableOpacity onPress={() => setCurrentPage("cooking")}>
-                  <Text
-                    style={[
-                      styles.linkText,
-                      { color: theme.colorMutedForeground },
-                    ]}
-                  >
-                    {t("receipt.seeMore")}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <ReceiptItems
-              onAddReceipt={() => {
-                setReturnToPage("home");
-                setCurrentPage("add-receipt");
-              }}
-              onDataLoad={setHasReceipts}
+          {/* 4. Daily Q&A */}
+          <View style={styles.sectionWrapper}>
+            <DailyQACard
+              onPress={() => setCurrentPage("daily-qa")}
+              linkKey={linkKey}
+              userId={userProfile?.uuid ?? null}
+            />
+          </View>
+
+          {/* 5. Time Capsules */}
+          <View style={styles.sectionWrapper}>
+            <CapsuleCard
+              onPress={() => setCurrentPage("capsules")}
+              userId={userProfile?.uuid ?? null}
+              linkKey={linkKey}
             />
           </View>
         </ScrollView>
-      </View>
+      </SafeAreaView>
+    );
+  };
+
+  return (
+    <View style={[styles.root, { backgroundColor: theme.colorBackground }]}>
+      <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+        {renderTabContent()}
+      </Animated.View>
+      <BottomNavBar activeTab={activeBottomTab} onNavigate={handleBottomNav} />
     </View>
   );
 }
@@ -602,76 +895,72 @@ function AppContent() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#E5E7EB",
   },
 
-  phoneContainer: {
-    position: "relative",
-    width: "100%",
-    aspectRatio: 9 / 19.5,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 48,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-    alignSelf: "center",
-    maxWidth: 420,
+  topBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 8,
+    paddingHorizontal: 20,
+    paddingBottom: 4,
   },
-  notch: {
-    position: "absolute",
-    top: 0,
-    alignSelf: "center",
-    width: 128,
-    height: 28,
-    backgroundColor: "#000",
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    zIndex: 20,
+  logoRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  scrollContent: {
-    paddingBottom: 24,
+  logoIcon: {
+    width: 32,
+    height: 21,
+    marginRight: 8,
   },
-
-  heroWrapper: {
-    height: 192,
-    width: "100%",
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
+  logoText: {
+    fontSize: 18,
+    fontWeight: "700",
   },
   settingsBtn: {
-    position: "absolute",
-    top: 48,
-    right: 16,
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
+
+  scrollContent: {
+    paddingBottom: 16,
+  },
+
   sectionWrapper: {
     paddingHorizontal: 20,
     paddingBottom: 12,
   },
-  sectionWrapperBottom: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+  mapContainer: {
+    height: 180,
+    borderRadius: 14,
+    overflow: "hidden",
   },
-  sectionHeader: {
-    flexDirection: "row",
+
+  // Placeholder page styles for unimplemented modules
+  placeholderPage: {
+    flex: 1,
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
+    justifyContent: "center",
+    padding: 20,
   },
-  sectionTitle: {
-    fontSize: 20,
+  placeholderPageInner: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  backBtn: {
+    position: "absolute",
+    top: 56,
+    left: 20,
+  },
+  placeholderTitle: {
+    fontSize: 22,
     fontWeight: "700",
-  },
-  linkText: {
-    fontSize: 14,
+    marginBottom: 8,
   },
 });

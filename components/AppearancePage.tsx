@@ -44,103 +44,114 @@ export function AppearancePage({
     <SafeAreaView
       style={[styles.screen, { backgroundColor: theme.colorBackground }]}
     >
+      {/* Header */}
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: theme.colorBorder },
+        ]}
+      >
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
+            <ArrowLeft size={22} color={theme.colorForeground} />
+          </TouchableOpacity>
+          <Text style={[styles.pageTitle, { color: theme.colorForeground }]}>
+            {t("appearance.title")}
+          </Text>
+          <View style={styles.iconBtn} />
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Settings Card */}
         <View
           style={[
-            styles.header,
+            styles.settingsList,
             {
-              backgroundColor: theme.colorBackground,
-              borderBottomColor: theme.colorBorder,
+              backgroundColor: theme.colorCard,
+              borderColor: theme.colorBorder,
             },
           ]}
         >
-          <View style={styles.headerRow}>
-            <View style={styles.leftGroup}>
-              <TouchableOpacity onPress={onBack} style={styles.iconBtn}>
-                <ArrowLeft size={20} color={theme.colorForeground} />
-              </TouchableOpacity>
-              <Text
-                style={[styles.pageTitle, { color: theme.colorForeground }]}
-              >
-                {t("appearance.title")}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Settings List */}
-        <View style={styles.settingsContainer}>
+          {/* Dark Mode */}
           <View
-            style={[styles.settingsList, { backgroundColor: theme.colorCard }]}
+            style={[
+              styles.settingsItem,
+              {
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: theme.colorBorder,
+              },
+            ]}
           >
-            {/* Dark Mode */}
             <View
               style={[
-                styles.settingsItem,
-                {
-                  ...styles.settingsItemBorder,
-                  borderBottomColor: theme.colorBorder,
-                },
+                styles.iconContainer,
+                { backgroundColor: theme.colorPrimary + "15" },
               ]}
             >
-              <View style={styles.iconContainer}>
-                <Moon size={20} color="#F97316" />
-              </View>
-              <View style={styles.itemContent}>
-                <Text
-                  style={[styles.itemLabel, { color: theme.colorForeground }]}
-                >
-                  {t("appearance.darkMode")}
-                </Text>
-                <Text
-                  style={[
-                    styles.itemDescription,
-                    { color: theme.colorMutedForeground },
-                  ]}
-                >
-                  {t("appearance.darkModeDesc")}
-                </Text>
-              </View>
-              <Switch
-                value={darkMode}
-                onValueChange={onToggleDarkMode}
-                trackColor={{ false: "#E5E7EB", true: "#F97316" }}
-                thumbColor="#FFFFFF"
-                ios_backgroundColor="#E5E7EB"
-              />
+              <Moon size={18} color={theme.colorPrimary} />
             </View>
-
-            {/* Language */}
-            <TouchableOpacity
-              style={styles.settingsItem}
-              activeOpacity={0.7}
-              onPress={handleSelectLanguage}
-            >
-              <View style={styles.iconContainer}>
-                <Globe size={20} color="#F97316" />
-              </View>
-              <View style={styles.itemContent}>
-                <Text
-                  style={[styles.itemLabel, { color: theme.colorForeground }]}
-                >
-                  {t("appearance.language")}
-                </Text>
-                <Text
-                  style={[
-                    styles.itemDescription,
-                    { color: theme.colorMutedForeground },
-                  ]}
-                >
-                  {languageLabel}
-                </Text>
-              </View>
-              <ChevronRight size={20} color={theme.colorMutedForeground} />
-            </TouchableOpacity>
+            <View style={styles.itemContent}>
+              <Text
+                style={[styles.itemLabel, { color: theme.colorForeground }]}
+              >
+                {t("appearance.darkMode")}
+              </Text>
+              <Text
+                style={[
+                  styles.itemDescription,
+                  { color: theme.colorMutedForeground },
+                ]}
+              >
+                {t("appearance.darkModeDesc")}
+              </Text>
+            </View>
+            <Switch
+              value={darkMode}
+              onValueChange={onToggleDarkMode}
+              trackColor={{
+                false: theme.colorSwitchBackground,
+                true: theme.colorPrimary,
+              }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor={theme.colorSwitchBackground}
+            />
           </View>
+
+          {/* Language */}
+          <TouchableOpacity
+            style={styles.settingsItem}
+            activeOpacity={0.7}
+            onPress={handleSelectLanguage}
+          >
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: theme.colorPrimary + "15" },
+              ]}
+            >
+              <Globe size={18} color={theme.colorPrimary} />
+            </View>
+            <View style={styles.itemContent}>
+              <Text
+                style={[styles.itemLabel, { color: theme.colorForeground }]}
+              >
+                {t("appearance.language")}
+              </Text>
+              <Text
+                style={[
+                  styles.itemDescription,
+                  { color: theme.colorMutedForeground },
+                ]}
+              >
+                {languageLabel}
+              </Text>
+            </View>
+            <ChevronRight size={18} color={theme.colorMutedForeground} />
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -151,13 +162,10 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  content: {
-    paddingBottom: 20,
-  },
   header: {
     paddingTop: 12,
     paddingBottom: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerRow: {
@@ -165,55 +173,45 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  leftGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   iconBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   pageTitle: {
-    marginLeft: 12,
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "600",
   },
-  settingsContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 16,
   },
   settingsList: {
-    borderRadius: 16,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   settingsItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  settingsItemBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   iconContainer: {
-    padding: 8,
-    backgroundColor: "#FFF7ED",
+    width: 34,
+    height: 34,
     borderRadius: 8,
-    marginRight: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
   },
   itemContent: {
     flex: 1,
   },
   itemLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "500",
     marginBottom: 2,
   },

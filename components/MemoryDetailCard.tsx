@@ -9,9 +9,10 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   FlatList,
+  Alert,
 } from "react-native";
 import { Image } from "expo-image";
-import { X, Calendar } from "lucide-react-native";
+import { X, Calendar, Pencil, Trash2 } from "lucide-react-native";
 import { useThemeContext } from "../styles/ThemeContext";
 import { useLanguageContext } from "../styles/LanguageContext";
 
@@ -22,16 +23,23 @@ export type MemoryDetail = {
   details: string;
   date: string;
   photos: MemoryPhoto[];
+  userId?: string; // creator's user_id
 };
 
 export function MemoryDetailCard({
   memory,
   initialImageIndex = 0,
   onClose,
+  currentUserId,
+  onEdit,
+  onDelete,
 }: {
   memory: MemoryDetail;
   initialImageIndex?: number;
   onClose: () => void;
+  currentUserId?: string;
+  onEdit?: (memory: MemoryDetail) => void;
+  onDelete?: (memoryId: string) => void;
 }) {
   const { theme } = useThemeContext();
   const { t } = useLanguageContext();
@@ -174,9 +182,50 @@ export function MemoryDetailCard({
             >
               {memory.details}
             </Text>
-            <View style={{ alignItems: "flex-end" }}>
-              <TouchableOpacity onPress={onClose} style={styles.primaryBtn}>
-                <Text style={styles.primaryBtnText}>{t("common.close")}</Text>
+            <View style={styles.actionRow}>
+              {currentUserId && memory.userId === currentUserId && onEdit && (
+                <TouchableOpacity
+                  onPress={() => onEdit(memory)}
+                  style={[styles.actionBtn, { backgroundColor: theme.colorSecondary }]}
+                >
+                  <Pencil size={14} color={theme.colorForeground} />
+                  <Text style={[styles.actionBtnText, { color: theme.colorForeground }]}>
+                    {t("memory.edit")}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {currentUserId && memory.userId === currentUserId && onDelete && (
+                <TouchableOpacity
+                  onPress={() => {
+                    Alert.alert(
+                      t("memory.deleteConfirm"),
+                      t("memory.deleteConfirmMessage"),
+                      [
+                        { text: t("common.cancel"), style: "cancel" },
+                        {
+                          text: t("memory.delete"),
+                          style: "destructive",
+                          onPress: () => onDelete(String(memory.id)),
+                        },
+                      ]
+                    );
+                  }}
+                  style={[styles.actionBtn, { backgroundColor: theme.colorDestructive }]}
+                >
+                  <Trash2 size={14} color={theme.colorDestructiveForeground} />
+                  <Text style={[styles.actionBtnText, { color: theme.colorDestructiveForeground }]}>
+                    {t("memory.delete")}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <View style={{ flex: 1 }} />
+              <TouchableOpacity
+                onPress={onClose}
+                style={[styles.primaryBtn, { backgroundColor: theme.colorPrimary }]}
+              >
+                <Text style={[styles.primaryBtnText, { color: theme.colorPrimaryForeground }]}>
+                  {t("common.close")}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -225,8 +274,8 @@ const styles = StyleSheet.create({
     gap: 6 as any,
   },
   dot: { height: 6, borderRadius: 3 },
-  dotInactive: { width: 6, backgroundColor: "rgba(255,255,255,0.5)" },
-  dotActive: { width: 24, backgroundColor: "#FFFFFF" },
+  dotInactive: { width: 6, backgroundColor: "rgba(255,255,255,0.45)" },
+  dotActive: { width: 24, backgroundColor: "rgba(255,255,255,0.9)" },
   content: { padding: 16 },
   headline: {
     fontSize: 18,
@@ -241,11 +290,26 @@ const styles = StyleSheet.create({
   },
   dateText: { fontSize: 13 },
   details: { fontSize: 14, lineHeight: 20, marginBottom: 16 },
-  primaryBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "#F97316",
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8 as any,
   },
-  primaryBtnText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
+  actionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6 as any,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 999,
+    minHeight: 44,
+  },
+  actionBtnText: { fontSize: 14, fontWeight: "600" },
+  primaryBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 999,
+    minHeight: 44,
+  },
+  primaryBtnText: { fontSize: 14, fontWeight: "600" },
 });
