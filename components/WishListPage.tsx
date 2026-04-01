@@ -33,7 +33,7 @@ import {
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
 import { api, Wish, WishCategory } from "../app/api";
 import { useThemeContext } from "../styles/ThemeContext";
@@ -181,11 +181,10 @@ export function WishListPage({
         const manipulated = await ImageManipulator.manipulateAsync(
           asset.uri,
           [{ resize: { width: 1280 } }],
-          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
         );
-        const base64 = await FileSystem.readAsStringAsync(manipulated.uri, {
-          encoding: "base64" as any,
-        });
+        const base64 = manipulated.base64 ||
+          await FileSystem.readAsStringAsync(manipulated.uri, { encoding: "base64" as any });
         const { url } = await api.uploadBase64Image({
           filename: `wish-fulfill-${Date.now()}.jpg`,
           base64,

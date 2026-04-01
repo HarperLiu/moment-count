@@ -14,6 +14,7 @@ import {
 import { Image } from "expo-image";
 import { ArrowLeft, User, Lock, Upload } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import { api } from "../app/api";
 import { useThemeContext } from "../styles/ThemeContext";
 import { useLanguageContext } from "../styles/LanguageContext";
 
@@ -21,7 +22,7 @@ interface RegisterPageProps {
   onRegister: (data: {
     name: string;
     slogan: string;
-    username: string;
+    avatar: string;
     password: string;
   }) => Promise<void>;
   onLoginClick: () => void;
@@ -32,7 +33,9 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
   const { t } = useLanguageContext();
   const [name, setName] = useState("");
   const [slogan, setSlogan] = useState("");
-  const [avatar, setAvatar] = useState("");
+  const [avatarUri, setAvatarUri] = useState("");
+  const [avatarBase64, setAvatarBase64] = useState("");
+  const [avatarMime, setAvatarMime] = useState("image/jpeg");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +46,14 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsMultipleSelection: false,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.9,
+      quality: 0.8,
+      base64: true,
     });
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setAvatar(result.assets[0].uri);
+      const asset = result.assets[0];
+      setAvatarUri(asset.uri);
+      setAvatarBase64(asset.base64 || "");
+      setAvatarMime(asset.mimeType || "image/jpeg");
     }
   };
 
@@ -56,7 +63,17 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
     try {
       setSubmitting(true);
       setError(null);
-      await onRegister({ name, slogan, username: avatar, password });
+      let avatarUrl = "";
+      if (avatarBase64) {
+        const ext = avatarMime.split("/")[1] || "jpg";
+        const { url } = await api.uploadBase64Image({
+          filename: `avatar_${Date.now()}.${ext}`,
+          base64: avatarBase64,
+          contentType: avatarMime,
+        });
+        avatarUrl = url;
+      }
+      await onRegister({ name, slogan, avatar: avatarUrl, password });
     } catch (err: any) {
       setError(err?.message || t("register.error"));
     } finally {
@@ -115,9 +132,9 @@ export function RegisterPage({ onRegister, onLoginClick }: RegisterPageProps) {
             {/* Avatar Upload */}
             <View style={styles.avatarSection}>
               <TouchableOpacity onPress={handleAvatarUpload}>
-                {avatar ? (
+                {avatarUri ? (
                   <Image
-                    source={{ uri: avatar }}
+                    source={{ uri: avatarUri }}
                     style={styles.avatarImage}
                     contentFit="cover"
                   />

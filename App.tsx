@@ -420,14 +420,14 @@ function AppContent() {
   const handleRegister = async (data: {
     name: string;
     slogan: string;
-    username: string; // avatar
+    avatar: string;
     password: string;
   }) => {
     try {
       const user = await api.register({
         name: data.name.trim(),
         slogan: data.slogan.trim(),
-        avatar: data.username || "",
+        avatar: data.avatar || "",
         password: data.password,
       });
       const profile = {

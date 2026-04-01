@@ -9,6 +9,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   FlatList,
+  ScrollView,
   Alert,
 } from "react-native";
 import { Image } from "expo-image";
@@ -165,8 +166,16 @@ export function MemoryDetailCard({
             )}
           </View>
 
-          <View style={styles.content}>
-            <Text style={[styles.headline, { color: theme.colorForeground }]}>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentInner}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text
+              style={[styles.headline, { color: theme.colorForeground }]}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
               {memory.headline}
             </Text>
             <View style={styles.dateRow}>
@@ -182,52 +191,53 @@ export function MemoryDetailCard({
             >
               {memory.details}
             </Text>
-            <View style={styles.actionRow}>
-              {currentUserId && memory.userId === currentUserId && onEdit && (
-                <TouchableOpacity
-                  onPress={() => onEdit(memory)}
-                  style={[styles.actionBtn, { backgroundColor: theme.colorSecondary }]}
-                >
-                  <Pencil size={14} color={theme.colorForeground} />
-                  <Text style={[styles.actionBtnText, { color: theme.colorForeground }]}>
-                    {t("memory.edit")}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {currentUserId && memory.userId === currentUserId && onDelete && (
-                <TouchableOpacity
-                  onPress={() => {
-                    Alert.alert(
-                      t("memory.deleteConfirm"),
-                      t("memory.deleteConfirmMessage"),
-                      [
-                        { text: t("common.cancel"), style: "cancel" },
-                        {
-                          text: t("memory.delete"),
-                          style: "destructive",
-                          onPress: () => onDelete(String(memory.id)),
-                        },
-                      ]
-                    );
-                  }}
-                  style={[styles.actionBtn, { backgroundColor: theme.colorDestructive }]}
-                >
-                  <Trash2 size={14} color={theme.colorDestructiveForeground} />
-                  <Text style={[styles.actionBtnText, { color: theme.colorDestructiveForeground }]}>
-                    {t("memory.delete")}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <View style={{ flex: 1 }} />
+          </ScrollView>
+
+          <View style={[styles.actionRow, { borderTopColor: theme.colorBorder }]}>
+            {currentUserId && memory.userId === currentUserId && onEdit && (
               <TouchableOpacity
-                onPress={onClose}
-                style={[styles.primaryBtn, { backgroundColor: theme.colorPrimary }]}
+                onPress={() => onEdit(memory)}
+                style={[styles.actionBtn, { backgroundColor: theme.colorSecondary }]}
               >
-                <Text style={[styles.primaryBtnText, { color: theme.colorPrimaryForeground }]}>
-                  {t("common.close")}
+                <Pencil size={14} color={theme.colorForeground} />
+                <Text style={[styles.actionBtnText, { color: theme.colorForeground }]}>
+                  {t("memory.edit")}
                 </Text>
               </TouchableOpacity>
-            </View>
+            )}
+            {currentUserId && memory.userId === currentUserId && onDelete && (
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    t("memory.deleteConfirm"),
+                    t("memory.deleteConfirmMessage"),
+                    [
+                      { text: t("common.cancel"), style: "cancel" },
+                      {
+                        text: t("memory.delete"),
+                        style: "destructive",
+                        onPress: () => onDelete(String(memory.id)),
+                      },
+                    ]
+                  );
+                }}
+                style={[styles.actionBtn, { backgroundColor: theme.colorDestructive }]}
+              >
+                <Trash2 size={14} color={theme.colorDestructiveForeground} />
+                <Text style={[styles.actionBtnText, { color: theme.colorDestructiveForeground }]}>
+                  {t("memory.delete")}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <View style={{ flex: 1 }} />
+            <TouchableOpacity
+              onPress={onClose}
+              style={[styles.primaryBtn, { backgroundColor: theme.colorPrimary }]}
+            >
+              <Text style={[styles.primaryBtnText, { color: theme.colorPrimaryForeground }]}>
+                {t("common.close")}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -246,8 +256,10 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 360,
+    maxHeight: Dimensions.get("window").height * 0.88,
     borderRadius: 24,
     overflow: "hidden",
+    flexDirection: "column",
   },
   closeBtn: {
     position: "absolute",
@@ -276,7 +288,15 @@ const styles = StyleSheet.create({
   dot: { height: 6, borderRadius: 3 },
   dotInactive: { width: 6, backgroundColor: "rgba(255,255,255,0.45)" },
   dotActive: { width: 24, backgroundColor: "rgba(255,255,255,0.9)" },
-  content: { padding: 16 },
+  content: {
+    // carousel height ≈ card width (aspectRatio:1); card width = min(screenW-32, 360)
+    // action row ≈ 68px (padding 12*2 + button 44)
+    maxHeight:
+      Dimensions.get("window").height * 0.88 -
+      Math.min(Dimensions.get("window").width - 32, 360) -
+      68,
+  },
+  contentInner: { padding: 16, paddingBottom: 8 },
   headline: {
     fontSize: 18,
     fontWeight: "700",
@@ -289,11 +309,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dateText: { fontSize: 13 },
-  details: { fontSize: 14, lineHeight: 20, marginBottom: 16 },
+  details: { fontSize: 14, lineHeight: 20 },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8 as any,
+    padding: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   actionBtn: {
     flexDirection: "row",

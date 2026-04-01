@@ -89,7 +89,7 @@ export function AddReceiptPage({
           });
           uploaded.push(url);
         } catch {
-          uploaded.push(uri);
+          // skip photo if upload fails — don't persist local URI to server
         }
       }
       onSave({

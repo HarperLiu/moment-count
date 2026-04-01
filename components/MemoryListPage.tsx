@@ -58,7 +58,11 @@ function HeadlineAndDetails({
   return (
     <View style={{ gap: 6 }}>
       <View style={styles.headlineRow}>
-        <Text style={[styles.cardTitle, { color: theme.colorForeground }]}>
+        <Text
+          style={[styles.cardTitle, { color: theme.colorForeground }]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {headline}
         </Text>
         <Text style={[styles.cardDate, { color: theme.colorMutedForeground }]}>
@@ -441,11 +445,11 @@ const styles = StyleSheet.create({
   },
   headlineRow: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 8 as any,
   },
-  cardTitle: { fontSize: 16, fontWeight: "700" },
-  cardDate: { fontSize: 12 },
+  cardTitle: { flex: 1, fontSize: 16, fontWeight: "700" },
+  cardDate: { flexShrink: 0, fontSize: 12, marginTop: 2 },
   cardDetails: { fontSize: 14, lineHeight: 20 },
 
   grid2: { flexDirection: "row", flexWrap: "wrap", gap: 12 as any },
